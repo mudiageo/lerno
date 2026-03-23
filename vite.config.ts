@@ -24,6 +24,7 @@ export default defineConfig({
             'db:migrate': { command: 'drizzle-kit migrate', cwd: 'packages/db' },
             'db:studio': { command: 'drizzle-kit studio', cwd: 'packages/db' },
             'jobs:dev': { command: 'tsx watch src/worker.ts', cwd: 'packages/jobs' },
+            'ui:add': { command: 'vpx shadcn-svelte@latest add', cwd: 'packages/ui' },
         },
     },
     staged: {

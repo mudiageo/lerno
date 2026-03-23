@@ -1,9 +1,16 @@
 {
-  "name": "ui",
+  "name": "@lerno/ui",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/lib/index.ts",
+    "./components/*": "./src/lib/components/*",
+    "./utils.ts": "./src/lib/utils.ts",
+    "./app.css": "./src/app.css"
+  },
   "scripts": {
+    "ui:add": "vpx shadcn-svelte@latest add",
     "dev": "vp dev",
     "build": "vp build",
     "preview": "vp preview",
@@ -12,15 +19,21 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "catalog:",
+    "@lucide/svelte": "catalog:",
     "@sveltejs/adapter-auto": "^7.0.0",
     "@sveltejs/kit": "^2.50.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@tailwindcss/forms": "^0.5.11",
-    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/forms": "latest",
+    "@tailwindcss/typography": "latest",
     "@tailwindcss/vite": "^4.1.18",
+    "clsx": "catalog:",
     "svelte": "^5.51.0",
     "svelte-check": "^4.4.2",
+    "tailwind-merge": "catalog:",
+    "tailwind-variants": "catalog:",
     "tailwindcss": "^4.1.18",
+    "tw-animate-css": "catalog:",
     "typescript": "^5.9.3",
     "vite": "catalog:",
     "vite-plus": "catalog:"
