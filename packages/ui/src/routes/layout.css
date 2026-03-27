@@ -190,3 +190,125 @@
 		display: none;
 	}
 }
+
+/* ============================================
+   LERNO BRAND EXTENSION
+   ============================================ */
+:root {
+  /* Brand blue (hue 250) */
+  --brand-50:  oklch(97% 0.02 250);
+  --brand-100: oklch(94% 0.04 250);
+  --brand-200: oklch(88% 0.08 250);
+  --brand-300: oklch(79% 0.12 250);
+  --brand-400: oklch(68% 0.17 250);
+  --brand-500: oklch(57% 0.22 250);   /* PRIMARY */
+  --brand-600: oklch(49% 0.22 250);
+  --brand-700: oklch(41% 0.20 250);
+  --brand-800: oklch(33% 0.16 250);
+  --brand-900: oklch(26% 0.12 250);
+  --brand-950: oklch(17% 0.08 250);
+
+  /* Gamification */
+  --xp-gold:       oklch(72% 0.18 85);
+  --streak-fire:   oklch(68% 0.22 40);
+  --mastery-low:   oklch(60% 0.22 25);
+  --mastery-mid:   oklch(72% 0.18 80);
+  --mastery-hi:    oklch(65% 0.20 145);
+
+  /* Feed layout */
+  --feed-max:       680px;
+  --sidebar-width:  240px;
+  --right-panel-w:  300px;
+
+  /* Easing */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.dark {
+  --brand-50:  oklch(17% 0.04 250);
+  --brand-100: oklch(22% 0.06 250);
+  --brand-200: oklch(28% 0.09 250);
+  --brand-300: oklch(38% 0.14 250);
+  --brand-400: oklch(50% 0.19 250);
+  --brand-500: oklch(60% 0.22 250);
+  --brand-600: oklch(68% 0.20 250);
+  --brand-700: oklch(75% 0.17 250);
+  --brand-800: oklch(83% 0.12 250);
+}
+
+.oled {
+  --background:   oklch(0% 0 0);
+  --card:         oklch(5% 0.01 250);
+  --popover:      oklch(5% 0.01 250);
+  --border:       oklch(15% 0.015 250);
+  --input:        oklch(15% 0.015 250);
+  --sidebar:      oklch(4% 0.01 250);
+}
+
+@theme inline {
+  --color-brand-50:  var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+  --color-xp-gold:      var(--xp-gold);
+  --color-streak-fire:  var(--streak-fire);
+  --color-mastery-low:  var(--mastery-low);
+  --color-mastery-mid:  var(--mastery-mid);
+  --color-mastery-hi:   var(--mastery-hi);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heart-pop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.4); }
+  60%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+@keyframes xp-float {
+  0%   { opacity: 1; transform: translateY(0) translateX(-50%); }
+  100% { opacity: 0; transform: translateY(-48px) translateX(-50%); }
+}
+@keyframes fire-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50%       { transform: scale(1.1); filter: brightness(1.2); }
+}
+@keyframes card-flip-out {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(90deg); }
+}
+@keyframes card-flip-in {
+  from { transform: rotateY(-90deg); }
+  to   { transform: rotateY(0deg); }
+}
+@keyframes surprise-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px) rotate(-1deg); }
+  40%       { transform: translateX(6px) rotate(1deg); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* Feed post stagger */
+.post-card { animation: slide-up-fade 350ms cubic-bezier(0, 0, 0.2, 1) both; }
+.post-card:nth-child(1) { animation-delay: 0ms; }
+.post-card:nth-child(2) { animation-delay: 40ms; }
+.post-card:nth-child(3) { animation-delay: 80ms; }
+.post-card:nth-child(n+4) { animation-delay: 120ms; }
+
+/* Safe area utilities */
+@utility pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+@utility pt-safe { padding-top: env(safe-area-inset-top); }
