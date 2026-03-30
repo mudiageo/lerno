@@ -1,4 +1,4 @@
-import { query, getRequestEvent } from '$app/server';
+import { query, command, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { posts, users, userCourses } from '@lerno/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
@@ -65,3 +65,35 @@ export const getShorts = query(v.object({}), async () => {
     createdAt: r.createdAt?.toISOString() ?? new Date().toISOString(),
   }));
 });
+
+export const uploadVideo = command(
+  v.object({
+    postType: v.union([v.literal('video'), v.literal('short')]),
+    title: v.string(),
+    description: v.string(),
+    videoUrl: v.string(),
+    courseId: v.optional(v.string()),
+  }),
+  async ({ postType, title, description, videoUrl, courseId }) => {
+    const event = getRequestEvent();
+    const userId = event.locals?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+
+    const [post] = await (db as any)
+      .insert(posts)
+      .values({
+        authorId: userId,
+        courseId: courseId ?? null,
+        postType,
+        content: {
+          title,
+          body: description,
+          videoUrl,
+          thumbnailUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80',
+        },
+      })
+      .returning({ id: posts.id });
+
+    return post;
+  }
+);
