@@ -6,6 +6,7 @@
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Clock from "@lucide/svelte/icons/clock";
   import { fade, slide } from "svelte/transition";
+  import { untrack } from "svelte";
 
   interface QuizQuestion {
     id: string;
@@ -34,7 +35,9 @@
   let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
 
   const current = $derived(questions[currentIndex]);
-  const progress = $derived(questions.length > 0 ? ((currentIndex) / questions.length) * 100 : 0);
+  const progress = $derived(
+    questions.length > 0 ? (currentIndex / questions.length) * 100 : 0,
+  );
   const isCorrect = $derived(selectedId === current?.correctOptionId);
 
   function startTimer() {
@@ -75,8 +78,10 @@
   }
 
   $effect(() => {
-    if (questions.length > 0) startTimer();
-    return () => { if (timerInterval) clearInterval(timerInterval); };
+    if (questions.length > 0) untrack(() => startTimer());
+    return () => {
+      if (timerInterval) clearInterval(timerInterval);
+    };
   });
 </script>
 
@@ -84,33 +89,58 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <p class="text-sm text-muted-foreground font-medium">
-      Question <span class="font-bold text-foreground">{currentIndex + 1}</span> / {questions.length}
+      Question <span class="font-bold text-foreground">{currentIndex + 1}</span>
+      / {questions.length}
     </p>
-    <div class="flex items-center gap-1.5 text-sm font-mono font-bold
-                {timeLeft <= 10 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}">
+    <div
+      class="flex items-center gap-1.5 text-sm font-mono font-bold
+                {timeLeft <= 10
+        ? 'text-red-600 dark:text-red-400'
+        : 'text-muted-foreground'}"
+    >
       <Clock class="size-3.5" />
       {timeLeft}s
     </div>
   </div>
 
-  <Progress value={progress} class="h-1.5 [&>[data-slot=indicator]]:bg-brand-500" />
+  <Progress
+    value={progress}
+    class="h-1.5 [&>[data-slot=indicator]]:bg-brand-500"
+  />
 
   {#if completed}
-    <div transition:fade class="flex flex-col items-center gap-6 py-12 text-center">
-      <div class="size-20 rounded-full bg-brand-500/10 flex items-center justify-center">
-        <span class="text-3xl font-black text-brand-600 dark:text-brand-400">{score}/{questions.length}</span>
+    <div
+      transition:fade
+      class="flex flex-col items-center gap-6 py-12 text-center"
+    >
+      <div
+        class="size-20 rounded-full bg-brand-500/10 flex items-center justify-center"
+      >
+        <span class="text-3xl font-black text-brand-600 dark:text-brand-400"
+          >{score}/{questions.length}</span
+        >
       </div>
       <div>
         <h3 class="text-xl font-bold text-foreground mb-1">
-          {score >= questions.length * 0.8 ? '🎉 Excellent!' : score >= questions.length * 0.5 ? '👍 Good Job!' : '📚 Keep Studying'}
+          {score >= questions.length * 0.8
+            ? "🎉 Excellent!"
+            : score >= questions.length * 0.5
+              ? "👍 Good Job!"
+              : "📚 Keep Studying"}
         </h3>
-        <p class="text-sm text-muted-foreground">You scored {Math.round((score / questions.length) * 100)}%</p>
+        <p class="text-sm text-muted-foreground">
+          You scored {Math.round((score / questions.length) * 100)}%
+        </p>
       </div>
-      <Badge variant="secondary" class="text-sm px-4 py-2 font-bold">+{score * 10} XP earned</Badge>
+      <Badge variant="secondary" class="text-sm px-4 py-2 font-bold"
+        >+{score * 10} XP earned</Badge
+      >
     </div>
   {:else if current}
     <div class="space-y-5">
-      <h3 class="text-base font-semibold text-foreground leading-snug">{current.question}</h3>
+      <h3 class="text-base font-semibold text-foreground leading-snug">
+        {current.question}
+      </h3>
 
       <div class="grid gap-2">
         {#each current.options as option}
@@ -119,19 +149,23 @@
 
           <button
             class="w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all relative overflow-hidden
-                   {revealed 
-                     ? isOptionCorrect 
-                       ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400' 
-                       : isOptionSelected 
-                         ? 'border-red-500 bg-red-50/50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
-                         : 'border-border bg-background opacity-60'
-                     : 'border-border bg-background hover:border-brand-400 hover:bg-brand-50/30 dark:hover:bg-brand-950/10'}"
+                   {revealed
+              ? isOptionCorrect
+                ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400'
+                : isOptionSelected
+                  ? 'border-red-500 bg-red-50/50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
+                  : 'border-border bg-background opacity-60'
+              : 'border-border bg-background hover:border-brand-400 hover:bg-brand-50/30 dark:hover:bg-brand-950/10'}"
             onclick={() => handleSelect(option.id)}
             disabled={revealed}
           >
             <span class="flex items-center gap-3">
-              <span class="size-6 rounded-full border flex items-center justify-center shrink-0 text-[11px] font-bold
-                           {revealed && isOptionCorrect ? 'bg-green-500 border-green-500 text-white' : 'border-muted-foreground/30'}">
+              <span
+                class="size-6 rounded-full border flex items-center justify-center shrink-0 text-[11px] font-bold
+                           {revealed && isOptionCorrect
+                  ? 'bg-green-500 border-green-500 text-white'
+                  : 'border-muted-foreground/30'}"
+              >
                 {String.fromCharCode(65 + current.options.indexOf(option))}
               </span>
               {option.text}
@@ -143,13 +177,21 @@
       {#if revealed}
         <div transition:slide>
           {#if current.explanation}
-            <div class="p-3 rounded-xl border-l-4 bg-muted/40 {isCorrect ? 'border-green-500' : 'border-amber-500'} text-xs text-muted-foreground leading-relaxed">
-              <span class="font-bold text-foreground block mb-1">Explanation</span>
+            <div
+              class="p-3 rounded-xl border-l-4 bg-muted/40 {isCorrect
+                ? 'border-green-500'
+                : 'border-amber-500'} text-xs text-muted-foreground leading-relaxed"
+            >
+              <span class="font-bold text-foreground block mb-1"
+                >Explanation</span
+              >
               {current.explanation}
             </div>
           {/if}
           <Button class="w-full mt-3 h-10" onclick={next}>
-            {currentIndex >= questions.length - 1 ? 'See Results' : 'Next Question →'}
+            {currentIndex >= questions.length - 1
+              ? "See Results"
+              : "Next Question →"}
           </Button>
         </div>
       {/if}
