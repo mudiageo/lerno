@@ -15,3 +15,4 @@ export * from './dmca';
 export * from './staff';
 export * from './support';
 export * from './api-keys';
+export * from './moderation';
