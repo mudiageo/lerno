@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import Home from "@lucide/svelte/icons/house";
-  import Tv from "@lucide/svelte/icons/tv";
+  import GraduationCap from "@lucide/svelte/icons/graduation-cap";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Clapperboard from "@lucide/svelte/icons/clapperboard";
   import User from "@lucide/svelte/icons/user";
@@ -9,7 +9,7 @@
   const tabs = [
     { href: "/feed", icon: Home, label: "Feed" },
     { href: "/watch/shorts", icon: Clapperboard, label: "Shorts" },
-    { href: "/watch", icon: Tv, label: "Watch" },
+    { href: "/courses", icon: GraduationCap, label: "Courses" },
     { href: "/study", icon: BookOpen, label: "Study" },
     { href: "/profile", icon: User, label: "Me" },
   ];
