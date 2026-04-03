@@ -25,11 +25,15 @@ export const topicMastery = pgTable('topic_mastery', {
 export const xpEvents = pgTable('xp_events', {
   id:           uuid('id').primaryKey().defaultRandom(),
   userId:       uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  courseId:     uuid('course_id').references(() => userCourses.id, { onDelete: 'cascade' }),
   eventType:    text('event_type').notNull(),
   xpAwarded:    integer('xp_awarded').notNull(),
   metadata:     jsonb('metadata'),
   createdAt:    timestamp('created_at').defaultNow(),
-});
+}, (t) => ({
+  idx_xpevents_user_course: index('idx_xpevents_user_course').on(t.userId, t.courseId),
+  idx_xpevents_course: index('idx_xpevents_course').on(t.courseId),
+}));
 
 export const achievements = pgTable('achievements', {
   id:           uuid('id').primaryKey().defaultRandom(),

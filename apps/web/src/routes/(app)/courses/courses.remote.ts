@@ -114,10 +114,10 @@ export const getCourseStats = query(
     const [seedCourse] = course
       ? [course]
       : await db
-          .select()
-          .from(userCourses)
-          .where(eq(userCourses.code, courseCode))
-          .limit(1);
+        .select()
+        .from(userCourses)
+        .where(eq(userCourses.code, courseCode))
+        .limit(1);
 
     if (!seedCourse) throw new Error('Course not found');
 
@@ -165,7 +165,7 @@ export const getCourseStats = query(
           .where(eq(communities.courseCode, courseCode))
           .limit(1),
         db
-          .select({ total: sql<number>`COALESCE(SUM(${xpEvents.xp}), 0)` })
+          .select({ total: sql<number>`COALESCE(SUM(${xpEvents.xpAwarded}), 0)` })
           .from(xpEvents)
           .where(and(eq(xpEvents.userId, userId), eq(xpEvents.courseId, courseId))),
       ]);
@@ -396,25 +396,25 @@ export const getCourseVideos = query(
 
     const uploadedVideos = course
       ? await db
-          .select({
-            id: posts.id,
-            content: posts.content,
-            postType: posts.postType,
-            likeCount: posts.likeCount,
-            viewCount: posts.viewCount,
-            aiGenerated: posts.aiGenerated,
-            createdAt: posts.createdAt,
-          })
-          .from(posts)
-          .where(
-            and(
-              eq(posts.courseId, course.id),
-              or(eq(posts.postType, 'video'), eq(posts.postType, 'short')),
-              eq(posts.isVisible, true),
-            ),
-          )
-          .orderBy(desc(posts.createdAt))
-          .limit(30)
+        .select({
+          id: posts.id,
+          content: posts.content,
+          postType: posts.postType,
+          likeCount: posts.likeCount,
+          viewCount: posts.viewCount,
+          aiGenerated: posts.aiGenerated,
+          createdAt: posts.createdAt,
+        })
+        .from(posts)
+        .where(
+          and(
+            eq(posts.courseId, course.id),
+            or(eq(posts.postType, 'video'), eq(posts.postType, 'short')),
+            eq(posts.isVisible, true),
+          ),
+        )
+        .orderBy(desc(posts.createdAt))
+        .limit(30)
       : [];
 
     return {
@@ -528,7 +528,7 @@ export const getCourseLeaderboard = query(
     const rows = await db
       .select({
         userId: xpEvents.userId,
-        total: sql<number>`SUM(${xpEvents.xp})`,
+        total: sql<number>`SUM(${xpEvents.xpAwarded})`,
         name: users.name,
         username: users.username,
         image: users.image,
@@ -542,7 +542,7 @@ export const getCourseLeaderboard = query(
         ),
       )
       .groupBy(xpEvents.userId, users.name, users.username, users.image)
-      .orderBy(desc(sql`SUM(${xpEvents.xp})`))
+      .orderBy(desc(sql`SUM(${xpEvents.xpAwarded})`))
       .limit(50);
 
     return rows.map((r, i) => ({ rank: i + 1, ...r }));
