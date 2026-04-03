@@ -43,6 +43,13 @@
       "when": 1774407086936,
       "tag": "0005_lazy_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774980793784,
+      "tag": "0006_wooden_joshua_kane",
+      "breakpoints": true
     }
   ]
 }

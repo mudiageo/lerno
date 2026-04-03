@@ -19,6 +19,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
+    "./drizzle": "./src/drizzle.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -29,7 +30,9 @@
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",
-    "prepublishOnly": "vp run build"
+    "prepublishOnly": "vp run build",
+    "db:push": "drizzle-kit push",
+    "db:seed": "node --import tsx/esm src/seed/curriculum.ts"
   },
   "dependencies": {
     "dotenv": "catalog:",

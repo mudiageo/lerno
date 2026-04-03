@@ -49,6 +49,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260316.1",
     "auth": "catalog:",
     "bumpp": "^11.0.1",
+    "dotenv": "catalog:",
     "typescript": "^5.9.3",
     "vite-plus": "^0.1.11"
   }

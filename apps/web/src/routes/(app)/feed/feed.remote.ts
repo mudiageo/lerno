@@ -4,7 +4,7 @@ import {
   posts, users, userCourses, interactions, xpEvents, topicMastery,
   mutes, mutedPosts, blocks, reports, notInterested,
 } from '@lerno/db/schema';
-import { desc, eq, inArray, and, sql, lt, not, isNull } from 'drizzle-orm';
+import { desc, eq, inArray, and, sql, lt, not, isNull } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 
 // ─── Feed ─────────────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export const getFeed = query(FeedInput, async (input) => {
         and(
           eq(interactions.userId, userId),
           inArray(interactions.type, ['like', 'bookmark']),
-          sql`${interactions.postId} = ANY(${sql.raw(`ARRAY[${postIds.map((id) => `'${id}'`).join(',')}]::uuid[]`)})`,
+          inArray(interactions.postId, postIds),
         ),
       );
     for (const i of myInteractions) {
@@ -234,7 +234,7 @@ export const recordImpression = command(PostIdInput, async ({ postId }) => {
   const event = getRequestEvent();
   const userId = event.locals?.user?.id;
 
-  await db.update(posts).set({ viewCount: sql`${posts.view_count} + 1` }).where(eq(posts.id, postId));
+  await db.update(posts).set({ viewCount: sql`${posts.viewCount} + 1` }).where(eq(posts.id, postId));
 
   if (userId) {
     await db.insert(interactions)

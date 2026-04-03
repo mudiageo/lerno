@@ -1,7 +1,7 @@
 <script lang="ts">
-  import PostCard from './post-card.svelte';
-  import PostSkeleton from './post-skeleton.svelte';
-  import { Spinner } from '$lib/components/ui/spinner';
+  import PostCard from "./post-card.svelte";
+  import PostSkeleton from "./post-skeleton.svelte";
+  import { Spinner } from "$lib/components/ui/spinner";
 
   let {
     posts = [],
@@ -27,7 +27,7 @@
           onLoadMore();
         }
       },
-      { rootMargin: '400px' }
+      { rootMargin: "400px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
@@ -40,19 +40,28 @@
       <PostSkeleton />
     {/each}
   {:else if posts.length === 0}
-    <div class="flex flex-col items-center justify-center py-16 text-center px-8">
-      <div class="size-16 rounded-full bg-brand-50 dark:bg-brand-950 flex items-center justify-center mb-4">
+    <div
+      class="flex flex-col items-center justify-center py-16 text-center px-8"
+    >
+      <div
+        class="size-16 rounded-full bg-brand-50 dark:bg-brand-950 flex items-center justify-center mb-4"
+      >
         <span class="text-3xl">📚</span>
       </div>
-      <p class="text-base font-semibold text-foreground mb-1">Your feed is empty</p>
-      <p class="text-sm text-muted-foreground">Follow courses and people to see content here, or the AI will start generating content shortly.</p>
+      <p class="text-base font-semibold text-foreground mb-1">
+        Your feed is empty
+      </p>
+      <p class="text-sm text-muted-foreground">
+        Follow courses and people to see content here, or the AI will start
+        generating content shortly.
+      </p>
     </div>
   {:else}
     {#each posts as post, i (post.id)}
       <PostCard {post} index={i} />
     {/each}
 
-    <div bind:this={sentinel} class="h-1" />
+    <div bind:this={sentinel} class="h-1"></div>
 
     {#if loadingMore}
       <div class="flex justify-center py-6">

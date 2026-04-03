@@ -6,6 +6,7 @@ import { db } from '@lerno/db';
 import * as schema from '@lerno/db/schema';
 import { email } from '@lerno/email';
 import type { RequestEvent } from '@sveltejs/kit';
+import 'dotenv/config';
 
 export const authOptions: BetterAuthOptions = {
   database: drizzleAdapter(db, { provider: 'pg', schema, usePlural: true }),

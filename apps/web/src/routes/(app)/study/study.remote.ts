@@ -1,7 +1,7 @@
 import { query, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { posts, users, userCourses, topicMastery } from '@lerno/db/schema';
-import { eq, and, desc, sql, lte, isNull, or } from 'drizzle-orm';
+import { eq, and, desc, sql, lte, isNull, or } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 
 export const getStudyDeck = query(

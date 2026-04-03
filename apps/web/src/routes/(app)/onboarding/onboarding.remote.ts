@@ -1,7 +1,7 @@
 import { command, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { userCourses, users, courseSchedule, xpEvents } from '@lerno/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq } from '@lerno/db/drizzle';
 import PgBoss from 'pg-boss';
 import * as v from 'valibot';
 
@@ -18,7 +18,7 @@ const OnboardingSchema = v.object({
     semester: v.string(),
   })),
   preferences: v.object({
-    theme: v.string(),
+    theme: v.picklist(['light', 'dark', 'oled', 'system']),
     aiEnabled: v.boolean(),
   }),
 });

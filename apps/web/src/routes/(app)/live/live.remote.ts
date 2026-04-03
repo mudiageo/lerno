@@ -1,11 +1,11 @@
 import { query, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { streams, users, userCourses } from '@lerno/db/schema';
-import { eq, and, or, desc, sql } from 'drizzle-orm';
+import { eq, and, or, desc, sql } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 
 export const getStreams = query(
-  v.object({ 
+  v.object({
     courseId: v.optional(v.string()),
     status: v.optional(v.enum(['live', 'scheduled', 'ended']))
   }),
@@ -48,8 +48,8 @@ export const getStreams = query(
 );
 
 export const createStream = query(
-  v.object({ 
-    title: v.string(), 
+  v.object({
+    title: v.string(),
     isAudioOnly: v.boolean(),
     courseId: v.optional(v.string())
   }),

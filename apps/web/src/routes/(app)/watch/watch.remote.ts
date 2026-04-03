@@ -1,7 +1,7 @@
 import { query, command, form, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { posts, users, userCourses } from '@lerno/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 import { storage } from '@lerno/storage';
 import { redirect } from '@sveltejs/kit';
