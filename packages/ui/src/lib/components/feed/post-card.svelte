@@ -206,12 +206,15 @@
   }
 </script>
 
+<!-- Intersection observer for impression -->
 <article
   {@attach impressionAttachment}
   class="post-card group border-b border-border/60 px-4 pt-3 pb-2 hover:bg-accent/40 cursor-pointer transition-colors duration-100 relative"
   style="animation-delay: {index * 40}ms"
 >
-  <a href="/post/{post.id}" class="absolute inset-0 z-0"><span class="sr-only">View post</span></a>
+  <a href="/post/{post.id}" class="absolute inset-0 z-0"
+    ><span class="sr-only">View post</span></a
+  >
   <div class="flex gap-3 relative z-10 pointer-events-none">
     <!-- Avatar column -->
     <div class="flex flex-col items-center shrink-0 pointer-events-auto">
@@ -287,7 +290,8 @@
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end" class="w-52">
-              <DropdownMenu.Item onSelect={copyLink}>Copy link</DropdownMenu.Item
+              <DropdownMenu.Item onSelect={copyLink}
+                >Copy link</DropdownMenu.Item
               >
               <DropdownMenu.Item
                 onSelect={() => {
@@ -367,7 +371,7 @@
             role="button"
             tabindex="0"
             onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
+            onkeydown={(e) => e.key === "Enter" && e.stopPropagation()}
           >
             {#if videoPlaying}
               <video

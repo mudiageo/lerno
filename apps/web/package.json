@@ -19,8 +19,9 @@
     "auth:schema": "better-auth generate --config src/lib/server/auth.ts --output src/lib/server/db/auth.schema.ts --yes"
   },
   "dependencies": {
+    "livekit-client": "catalog:",
     "livekit-server-sdk": "catalog:",
-    "pg-boss": "^10.1.4"
+    "pg-boss": "catalog:"
   },
   "devDependencies": {
     "@better-auth/cli": "~1.4.21",
@@ -40,8 +41,8 @@
     "@tanstack/svelte-query": "^5.65.0",
     "@types/node": "^24",
     "better-auth": "~1.4.21",
-    "drizzle-kit": "^0.31.8",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
     "mode-watcher": "^1.1.0",
     "postgres": "^3.4.8",
     "svelte": "^5.51.0",
