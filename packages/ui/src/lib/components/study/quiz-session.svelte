@@ -6,7 +6,7 @@
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Clock from "@lucide/svelte/icons/clock";
   import { fade, slide } from "svelte/transition";
-  import { untrack } from "svelte";
+  import { untrack, onDestroy } from "svelte";
 
   interface QuizQuestion {
     id: string;
@@ -31,8 +31,9 @@
   let revealed = $state(false);
   let score = $state(0);
   let completed = $state(false);
-  let timeLeft = $state(timePerQuestion);
-  let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
+  let timeLeft = $derived(timePerQuestion);
+  let timerInterval: ReturnType<typeof setInterval> | null = null;
+  let hasStarted = false;
 
   const current = $derived(questions[currentIndex]);
   const progress = $derived(
@@ -78,10 +79,16 @@
   }
 
   $effect(() => {
-    if (questions.length > 0) untrack(() => startTimer());
-    return () => {
-      if (timerInterval) clearInterval(timerInterval);
-    };
+    if (questions.length > 0 && !hasStarted) {
+      untrack(() => {
+        hasStarted = true;
+        startTimer();
+      });
+    }
+  });
+
+  onDestroy(() => {
+    if (timerInterval) clearInterval(timerInterval);
   });
 </script>
 
