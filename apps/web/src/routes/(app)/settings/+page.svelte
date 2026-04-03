@@ -40,6 +40,12 @@
         { href: "/settings/data-export", icon: Database, label: "Data Export", desc: "Download your data archive" },
       ]
     },
+    {
+      title: "Help & Support",
+      items: [
+        { href: "/help", icon: HelpCircle, label: "Help Center", desc: "Guides, FAQs, and support" },
+      ]
+    },
   ];
 
   async function signOut() {

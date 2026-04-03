@@ -9,6 +9,7 @@
   import Search from "@lucide/svelte/icons/search";
   import PenSquare from "@lucide/svelte/icons/pen-square";
   import Settings from "@lucide/svelte/icons/settings";
+  import HelpCircle from "@lucide/svelte/icons/help-circle";
   import * as Avatar from "$lib/components/ui/avatar";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Button } from "$lib/components/ui/button";
@@ -98,6 +99,15 @@
   >
     <Settings class="size-5 shrink-0" />
     <span class="hidden xl:block">Settings</span>
+  </a>
+
+  <!-- Help -->
+  <a
+    href="/help"
+    class="flex items-center gap-3 px-2 xl:px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+  >
+    <HelpCircle class="size-5 shrink-0" />
+    <span class="hidden xl:block">Help Center</span>
   </a>
 
   <!-- User profile -->
