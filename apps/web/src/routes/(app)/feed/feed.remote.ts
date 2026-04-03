@@ -13,6 +13,8 @@ const FeedInput = v.object({
   cursor: v.optional(v.string()),      // last post createdAt ISO string
   limit: v.optional(v.number()),
   communityId: v.optional(v.string()), // filter by community
+  postType: v.optional(v.string()),    // 'short', 'quiz', 'video', etc.
+  courseCode: v.optional(v.string()),  // filter by course code
 });
 
 export const getPostById = query(v.object({ postId: v.string() }), async ({ postId }) => {
@@ -111,11 +113,14 @@ export const getFeed = query(FeedInput, async (input) => {
   const whereConditions = and(
     eq(posts.isVisible, true),
     cursorCondition,
+    input.communityId ? eq(posts.communityId, input.communityId) : undefined,
+    input.postType ? eq(posts.postType, input.postType as any) : undefined,
+    input.courseCode ? eq(userCourses.code, input.courseCode) : undefined,
     excludeUserIds.length > 0
-      ? sql`${posts.authorId} NOT IN (${sql.raw(excludeUserIds.map((id) => `'${id}'`).join(','))})`
+      ? not(inArray(posts.authorId, excludeUserIds))
       : undefined,
     excludePostIds.length > 0
-      ? sql`${posts.id} NOT IN (${sql.raw(excludePostIds.map((id) => `'${id}'`).join(','))})`
+      ? not(inArray(posts.id, excludePostIds))
       : undefined,
   );
 

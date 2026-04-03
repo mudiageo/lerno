@@ -40,7 +40,7 @@ export const getMyCourses = query(
       courses.map(async (course) => {
         // Mastery average for this course
         const [masteryRow] = await db
-          .select({ avg: sql<number>`AVG(${topicMastery.masteryPct})` })
+          .select({ avg: sql<number>`AVG(${topicMastery.score})` })
           .from(topicMastery)
           .where(and(eq(topicMastery.userId, userId), eq(topicMastery.courseId, course.id)));
 
@@ -123,10 +123,10 @@ export const getCourseStats = query(
 
     const courseId = seedCourse.id;
 
-    const [[masteryRow], [flashcardsRow], [quizzesRow], [videosRow], communityRow, [xpRow]] =
+    const [[masteryRow], [flashcardsRow], [quizzesRow], [videosRow], [communityRow], [xpRow]] =
       await Promise.all([
         db
-          .select({ avg: sql<number>`COALESCE(AVG(${topicMastery.masteryPct}), 0)` })
+          .select({ avg: sql<number>`COALESCE(AVG(${topicMastery.score}), 0)` })
           .from(topicMastery)
           .where(and(eq(topicMastery.userId, userId), eq(topicMastery.courseId, courseId))),
         db
@@ -216,7 +216,7 @@ export const searchCourseCatalog = query(
       )
       .groupBy(userCourses.code, userCourses.title, userCourses.description, userCourses.year, userCourses.creditUnits)
       .limit(20);
-    console.log(results)
+
     if (!userId) return results;
 
     // Mark which ones the user is already enrolled in

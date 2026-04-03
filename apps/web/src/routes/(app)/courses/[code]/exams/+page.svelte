@@ -49,22 +49,34 @@
 
   // Upcoming vs past
   const now = new Date();
-  const upcoming = $derived(exams.filter((e) => new Date(e.scheduledAt) >= now));
+  const upcoming = $derived(
+    exams.filter((e) => new Date(e.scheduledAt) >= now),
+  );
   const past = $derived(exams.filter((e) => new Date(e.scheduledAt) < now));
 
   const examTypeIcons: Record<string, string> = {
-    exam: "🎓", quiz: "📝", lab: "🔬",
-    assignment: "📋", presentation: "🎤", other: "📌",
+    exam: "🎓",
+    quiz: "📝",
+    lab: "🔬",
+    assignment: "📋",
+    presentation: "🎤",
+    other: "📌",
   };
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString("en-NG", {
-      weekday: "long", day: "numeric", month: "long", year: "numeric",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   }
 
   function formatTime(iso: string) {
-    return new Date(iso).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" });
+    return new Date(iso).toLocaleTimeString("en-NG", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   function formatCountdown(iso: string) {
@@ -88,10 +100,17 @@
         ...form,
         durationMins: form.durationMins || undefined,
         weightPct: form.weightPct,
-      }).updates(getExamSchedule({ courseCode }).invalidate());
+      }).updates(getExamSchedule({ courseCode }));
       toast.success("Exam added to timetable");
       addOpen = false;
-      form = { title: "", eventType: "exam", scheduledAt: "", durationMins: 180, weightPct: undefined, location: "" };
+      form = {
+        title: "",
+        eventType: "exam",
+        scheduledAt: "",
+        durationMins: 180,
+        weightPct: undefined,
+        location: "",
+      };
     } catch (e: any) {
       toast.error(e.message ?? "Failed to add exam");
     }
@@ -127,7 +146,8 @@
     german_objective: {
       label: "German Objective",
       icon: FileText,
-      description: "Fill-in-the-blank / complete the sentence. Auto-marked by fuzzy match.",
+      description:
+        "Fill-in-the-blank / complete the sentence. Auto-marked by fuzzy match.",
       color: "bg-amber-500",
     },
   };
@@ -141,11 +161,20 @@
       Exam Timetable
     </h2>
     <div class="flex gap-2">
-      <Button size="sm" variant="outline" class="h-8 text-xs gap-1.5" onclick={() => (mockOpen = true)}>
+      <Button
+        size="sm"
+        variant="outline"
+        class="h-8 text-xs gap-1.5"
+        onclick={() => (mockOpen = true)}
+      >
         <Zap class="size-3.5" />
         Mock Exam
       </Button>
-      <Button size="sm" class="h-8 text-xs gap-1.5" onclick={() => (addOpen = true)}>
+      <Button
+        size="sm"
+        class="h-8 text-xs gap-1.5"
+        onclick={() => (addOpen = true)}
+      >
         <Plus class="size-3.5" />
         Add Exam
       </Button>
@@ -155,18 +184,31 @@
   <!-- Upcoming exams -->
   {#if upcoming.length > 0}
     <section class="space-y-2">
-      <p class="text-xs font-bold text-muted-foreground uppercase tracking-widest">Upcoming</p>
+      <p
+        class="text-xs font-bold text-muted-foreground uppercase tracking-widest"
+      >
+        Upcoming
+      </p>
       {#each upcoming as exam (exam.id)}
-        <div class="flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:border-brand-300/50 transition-colors">
-          <span class="text-2xl mt-0.5 shrink-0">{examTypeIcons[exam.eventType] ?? "📌"}</span>
+        {@const countdown = formatCountdown(exam.scheduledAt)}
+        <div
+          class="flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:border-brand-300/50 transition-colors"
+        >
+          <span class="text-2xl mt-0.5 shrink-0"
+            >{examTypeIcons[exam.eventType] ?? "📌"}</span
+          >
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
               <div>
                 <p class="text-sm font-bold text-foreground">{exam.title}</p>
                 <p class="text-xs text-muted-foreground mt-0.5">
-                  {formatDate(exam.scheduledAt)} · {formatTime(exam.scheduledAt)}
-                  {#if exam.durationMins} · {exam.durationMins}min{/if}
-                  {#if exam.location} · 📍 {exam.location}{/if}
+                  {formatDate(exam.scheduledAt)} · {formatTime(
+                    exam.scheduledAt,
+                  )}
+                  {#if exam.durationMins}
+                    · {exam.durationMins}min{/if}
+                  {#if exam.location}
+                    · 📍 {exam.location}{/if}
                 </p>
               </div>
               <button
@@ -179,11 +221,14 @@
             </div>
             <div class="flex items-center gap-2 mt-2">
               {#if exam.weightPct}
-                <Badge variant="outline" class="text-[10px] h-4 px-1.5">{exam.weightPct}% weight</Badge>
+                <Badge variant="outline" class="text-[10px] h-4 px-1.5"
+                  >{exam.weightPct}% weight</Badge
+                >
               {/if}
-              {@const countdown = formatCountdown(exam.scheduledAt)}
               {#if countdown}
-                <span class="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1">
+                <span
+                  class="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1"
+                >
                   <Clock class="size-3" />
                   {countdown}
                 </span>
@@ -194,11 +239,15 @@
       {/each}
     </section>
   {:else}
-    <div class="flex flex-col items-center gap-3 py-12 text-center rounded-2xl border border-dashed border-border">
+    <div
+      class="flex flex-col items-center gap-3 py-12 text-center rounded-2xl border border-dashed border-border"
+    >
       <CalendarDays class="size-10 text-muted-foreground/30" />
       <div>
         <p class="text-sm font-medium text-foreground">No upcoming exams</p>
-        <p class="text-xs text-muted-foreground">Add your exam dates to get countdown reminders.</p>
+        <p class="text-xs text-muted-foreground">
+          Add your exam dates to get countdown reminders.
+        </p>
       </div>
       <Button size="sm" onclick={() => (addOpen = true)} class="gap-1.5">
         <Plus class="size-3.5" /> Add Exam Date
@@ -209,13 +258,25 @@
   <!-- Past exams -->
   {#if past.length > 0}
     <section class="space-y-2">
-      <p class="text-xs font-bold text-muted-foreground uppercase tracking-widest">Past</p>
+      <p
+        class="text-xs font-bold text-muted-foreground uppercase tracking-widest"
+      >
+        Past
+      </p>
       {#each past as exam (exam.id)}
-        <div class="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20 opacity-60">
-          <span class="text-lg shrink-0">{examTypeIcons[exam.eventType] ?? "📌"}</span>
+        <div
+          class="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20 opacity-60"
+        >
+          <span class="text-lg shrink-0"
+            >{examTypeIcons[exam.eventType] ?? "📌"}</span
+          >
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-foreground truncate">{exam.title}</p>
-            <p class="text-[11px] text-muted-foreground">{formatDate(exam.scheduledAt)}</p>
+            <p class="text-sm font-medium text-foreground truncate">
+              {exam.title}
+            </p>
+            <p class="text-[11px] text-muted-foreground">
+              {formatDate(exam.scheduledAt)}
+            </p>
           </div>
           <button
             class="text-muted-foreground/30 hover:text-red-400 transition-colors"
@@ -246,7 +307,10 @@
           <Select.Trigger class="w-full">{form.eventType}</Select.Trigger>
           <Select.Content>
             {#each ["exam", "quiz", "lab", "assignment", "presentation", "other"] as t}
-              <Select.Item value={t}>{examTypeIcons[t]} {t.charAt(0).toUpperCase() + t.slice(1)}</Select.Item>
+              <Select.Item value={t}
+                >{examTypeIcons[t]}
+                {t.charAt(0).toUpperCase() + t.slice(1)}</Select.Item
+              >
             {/each}
           </Select.Content>
         </Select.Root>
@@ -258,7 +322,11 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1.5">
           <Label>Duration (mins)</Label>
-          <Input type="number" placeholder="180" bind:value={form.durationMins} />
+          <Input
+            type="number"
+            placeholder="180"
+            bind:value={form.durationMins}
+          />
         </div>
         <div class="space-y-1.5">
           <Label>Weight (%)</Label>
@@ -292,18 +360,26 @@
         {@const Icon = config.icon}
         <button
           class="w-full flex items-center gap-4 p-3.5 rounded-2xl border-2 text-left transition-all
-                 {mockType === key ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20' : 'border-border hover:border-muted-foreground/30'}"
+                 {mockType === key
+            ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20'
+            : 'border-border hover:border-muted-foreground/30'}"
           onclick={() => (mockType = key as QuestionType)}
         >
-          <div class="size-10 rounded-xl {config.color} flex items-center justify-center shrink-0">
+          <div
+            class="size-10 rounded-xl {config.color} flex items-center justify-center shrink-0"
+          >
             <Icon class="size-5 text-white" />
           </div>
           <div class="min-w-0">
             <p class="text-sm font-bold text-foreground">{config.label}</p>
-            <p class="text-xs text-muted-foreground leading-snug">{config.description}</p>
+            <p class="text-xs text-muted-foreground leading-snug">
+              {config.description}
+            </p>
           </div>
           {#if mockType === key}
-            <div class="size-4 rounded-full bg-brand-500 shrink-0 ml-auto"></div>
+            <div
+              class="size-4 rounded-full bg-brand-500 shrink-0 ml-auto"
+            ></div>
           {/if}
         </button>
       {/each}

@@ -25,7 +25,6 @@
   import { Separator } from "$lib/components/ui/separator";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Skeleton } from "$lib/components/ui/skeleton";
-  import { goto } from "$app/navigation";
   import QuizPost from "./quiz-post.svelte";
   import FlashcardPost from "./flashcard-post.svelte";
   import PollPost from "./poll-post.svelte";
@@ -207,16 +206,15 @@
   }
 </script>
 
-<!-- Intersection observer for impression -->
 <article
   {@attach impressionAttachment}
   class="post-card group border-b border-border/60 px-4 pt-3 pb-2 hover:bg-accent/40 cursor-pointer transition-colors duration-100 relative"
   style="animation-delay: {index * 40}ms"
-  onclick={() => { goto(`/post/${post.id}`); }}
 >
-  <div class="flex gap-3">
+  <a href="/post/{post.id}" class="absolute inset-0 z-0"><span class="sr-only">View post</span></a>
+  <div class="flex gap-3 relative z-10 pointer-events-none">
     <!-- Avatar column -->
-    <div class="flex flex-col items-center shrink-0">
+    <div class="flex flex-col items-center shrink-0 pointer-events-auto">
       <a
         href="/profile/{post.author?.username}"
         onclick={(e) => e.stopPropagation()}
@@ -289,21 +287,21 @@
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end" class="w-52">
-              <DropdownMenu.Item onclick={copyLink}>Copy link</DropdownMenu.Item
+              <DropdownMenu.Item onSelect={copyLink}>Copy link</DropdownMenu.Item
               >
               <DropdownMenu.Item
-                onclick={() => {
+                onSelect={() => {
                   onNotInterested?.(post.id);
                 }}>Not interested</DropdownMenu.Item
               >
               <DropdownMenu.Item
-                onclick={() => {
+                onSelect={() => {
                   onMutePost?.(post.id);
                 }}>Mute this post</DropdownMenu.Item
               >
               {#if !isOwnPost}
                 <DropdownMenu.Item
-                  onclick={() => {
+                  onSelect={() => {
                     onMuteUser?.(post.authorId!);
                   }}
                 >
@@ -314,7 +312,7 @@
               {#if !isOwnPost}
                 <DropdownMenu.Item
                   class="text-destructive focus:text-destructive"
-                  onclick={() => {
+                  onSelect={() => {
                     reportOpen = true;
                   }}
                 >
@@ -322,7 +320,7 @@
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   class="text-destructive focus:text-destructive"
-                  onclick={() => {
+                  onSelect={() => {
                     onBlockUser?.(post.authorId!);
                   }}
                 >
@@ -330,7 +328,7 @@
                 </DropdownMenu.Item>
               {/if}
               <DropdownMenu.Item
-                onclick={() => {
+                onSelect={() => {
                   onShare?.(post.id);
                 }}>Share / Embed</DropdownMenu.Item
               >
@@ -366,7 +364,10 @@
           {/if}
           <div
             class="relative rounded-2xl overflow-hidden border border-border/60 bg-black aspect-video"
+            role="button"
+            tabindex="0"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
           >
             {#if videoPlaying}
               <video
@@ -513,11 +514,11 @@
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="start" class="w-40">
-                <DropdownMenu.Item onclick={() => onRepost?.(post.id)}>
+                <DropdownMenu.Item onSelect={() => onRepost?.(post.id)}>
                   <Repeat2 class="size-4 mr-2" /> Repost
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
-                  onclick={() => {
+                  onSelect={() => {
                     quoteOpen = true;
                   }}
                 >

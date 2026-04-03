@@ -28,7 +28,7 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import GraduationCap from "@lucide/svelte/icons/graduation-cap";
 
-  const courses = await getMyCourses({});
+  const courses = $derived(await getMyCourses({}));
 
   let addOpen = $state(false);
   let searchQuery = $state("");
