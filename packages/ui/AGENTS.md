@@ -11,7 +11,7 @@ This package contains the shared UI components and design system for Lerno, buil
 
 ## 🏗️ Structure
 
-Components are organized in [src/lib/components/](file:///c%3A/Users/Admin/lerno/packages/ui/src/lib/components/):
+Components are organized in [src/lib/components/](./src/lib/components/):
 - `ui/`: Fundamental atoms (Button, Card, Input).
 - `layout/`: Shell components (Sidebar, TopNav, BottomNav).
 - `feed/`: Social and post-related cards.
