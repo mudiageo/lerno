@@ -2,6 +2,7 @@ import { pgTable, uuid, text, boolean, timestamp, integer, jsonb, pgEnum, index,
 import { sql } from 'drizzle-orm';
 import { users } from './users';
 import { userCourses } from './courses';
+import { communities } from './communities';
 
 export const postTypeEnum = pgEnum('post_type', [
   'text', 'image', 'video', 'quiz', 'flashcard', 'poll',
@@ -18,6 +19,7 @@ export const posts = pgTable('posts', {
   id:               uuid('id').primaryKey().defaultRandom(),
   authorId:         uuid('author_id').references(() => users.id, { onDelete: 'set null' }),
   courseId:         uuid('course_id').references(() => userCourses.id, { onDelete: 'set null' }),
+  communityId:      uuid('community_id').references(() => communities.id, { onDelete: 'set null' }),
   parentId:         uuid('parent_id'),
   repostOfId:       uuid('repost_of_id'),
   quoteOfId:        uuid('quote_of_id'),
@@ -38,6 +40,7 @@ export const posts = pgTable('posts', {
   updatedAt:        timestamp('updated_at').defaultNow(),
 }, (t) => ({
   idx_posts_course_created: index('idx_posts_course_created').on(t.courseId, sql`${t.createdAt} DESC`),
+  idx_posts_community: index('idx_posts_community').on(t.communityId, sql`${t.createdAt} DESC`),
   idx_posts_engagement: index('idx_posts_engagement').on(sql`${t.engagementScore} DESC`, sql`${t.createdAt} DESC`),
   idx_posts_author: index('idx_posts_author').on(t.authorId, sql`${t.createdAt} DESC`),
   idx_posts_visible: index('idx_posts_visible').on(t.isVisible).where(sql`${t.isVisible} = true`),
