@@ -9,6 +9,7 @@
   import Shield from "@lucide/svelte/icons/shield";
   import CreditCard from "@lucide/svelte/icons/credit-card";
   import Palette from "@lucide/svelte/icons/palette";
+  import Database from "@lucide/svelte/icons/database";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import LogOut from "@lucide/svelte/icons/log-out";
   import { goto } from "$app/navigation";
@@ -24,19 +25,19 @@
       items: [
         { href: "/profile", icon: User, label: "Edit Profile", desc: "Name, bio, avatar" },
         { href: "/settings/notifications", icon: Bell, label: "Notifications", desc: "Alerts and reminders" },
-        { href: "/settings/privacy", icon: Shield, label: "Privacy & Security", desc: "Password, 2FA" },
       ]
     },
     {
-      title: "Subscription",
+      title: "Appearance & Preferences",
       items: [
-        { href: "/settings/billing", icon: CreditCard, label: "Billing & Plan", desc: "Manage subscription" },
+        { href: "/settings/preferences", icon: Palette, label: "Display & Notifications", desc: "Theme, alerts, preferences" },
       ]
     },
     {
-      title: "Appearance",
+      title: "Data & Privacy",
       items: [
-        { href: "/settings/appearance", icon: Palette, label: "Theme", desc: "Light, dark, system" },
+        { href: "/settings/privacy", icon: Shield, label: "Security", desc: "Password, 2FA" },
+        { href: "/settings/data-export", icon: Database, label: "Data Export", desc: "Download your data archive" },
       ]
     },
   ];
