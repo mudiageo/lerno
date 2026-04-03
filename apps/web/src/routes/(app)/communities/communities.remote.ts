@@ -34,9 +34,9 @@ export const getCommunities = query(
           courseCode ? eq(communities.courseCode, courseCode) : undefined,
           search
             ? or(
-                ilike(communities.name, `%${search}%`),
-                ilike(communities.description, `%${search}%`),
-              )
+              ilike(communities.name, `%${search}%`),
+              ilike(communities.description, `%${search}%`),
+            )
             : undefined,
         ),
       )
@@ -111,9 +111,9 @@ export const getCommunityPosts = query(
         authorId: posts.authorId,
         author: {
           id: users.id,
-          name: users.name,
+          name: users.displayName,
           username: users.username,
-          image: users.image,
+          image: users.avatarUrl,
         },
       })
       .from(posts)
