@@ -3,12 +3,16 @@
     getCommunities,
     joinCommunity,
     leaveCommunity,
+    createCommunity,
   } from "./communities.remote";
   import { Button } from "@lerno/ui/components/ui/button";
   import { Badge } from "@lerno/ui/components/ui/badge";
   import { Input } from "@lerno/ui/components/ui/input";
   import { toast } from "@lerno/ui/components/ui/sonner";
   import { Skeleton } from "@lerno/ui/components/ui/skeleton";
+  import { Label } from "@lerno/ui/components/ui/label";
+  import * as Dialog from "@lerno/ui/components/ui/dialog";
+  import { goto } from "$app/navigation";
   import Search from "@lucide/svelte/icons/search";
   import Plus from "@lucide/svelte/icons/plus";
   import Users from "@lucide/svelte/icons/users";
@@ -16,6 +20,9 @@
 
   let searchQuery = $state("");
   let joining = $state<Record<string, boolean>>({});
+  let createOpen = $state(false);
+  let creating = $state(false);
+  let form = $state({ name: "", description: "", courseCode: "", isPrivate: false });
 
   // Top-level await for communities
   const allCommunities = await getCommunities({});
@@ -66,6 +73,29 @@
   function formatCount(n: number) {
     return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n ?? 0);
   }
+
+  async function handleCreate() {
+    if (!form.name.trim()) {
+      toast.error("Community name is required");
+      return;
+    }
+    creating = true;
+    try {
+      const res = await createCommunity({
+        name: form.name,
+        description: form.description || undefined,
+        courseCode: form.courseCode || undefined,
+        isPrivate: form.isPrivate,
+      });
+      toast.success("Community created!");
+      createOpen = false;
+      goto(`/communities/${res.slug}`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to create community");
+    } finally {
+      creating = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -89,7 +119,7 @@
         <Users class="size-5" />
         Communities
       </h1>
-      <Button size="sm" class="h-8 gap-1.5 text-xs shrink-0">
+      <Button size="sm" class="h-8 gap-1.5 text-xs shrink-0" onclick={() => (createOpen = true)}>
         <Plus class="size-3.5" />
         Create
       </Button>
@@ -218,3 +248,41 @@
     {/snippet}
   </svelte:boundary>
 </div>
+
+<!-- Create Community Dialog -->
+<Dialog.Root bind:open={createOpen}>
+  <Dialog.Content class="max-w-sm">
+    <Dialog.Header>
+      <Dialog.Title class="flex items-center gap-2">
+        <Users class="size-4" />
+        Create Community
+      </Dialog.Title>
+      <Dialog.Description>
+        Start a new study group or course community.
+      </Dialog.Description>
+    </Dialog.Header>
+
+    <div class="space-y-4">
+      <div class="space-y-1.5">
+        <Label>Name</Label>
+        <Input placeholder="e.g. CPE375 Study Group" bind:value={form.name} />
+      </div>
+      <div class="space-y-1.5">
+        <Label>Description</Label>
+        <Input placeholder="What is this community about?" bind:value={form.description} />
+      </div>
+      <div class="space-y-1.5">
+        <Label>Course Code (optional)</Label>
+        <Input placeholder="e.g. CPE375" bind:value={form.courseCode} />
+      </div>
+      <label class="flex items-center gap-2 text-sm text-foreground">
+        <input type="checkbox" bind:checked={form.isPrivate} class="rounded border-border" />
+        Private Community
+      </label>
+
+      <Button class="w-full" disabled={creating} onclick={handleCreate}>
+        {creating ? "Creating…" : "Create Community"}
+      </Button>
+    </div>
+  </Dialog.Content>
+</Dialog.Root>

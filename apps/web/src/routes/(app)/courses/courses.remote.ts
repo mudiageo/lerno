@@ -541,7 +541,7 @@ export const getCourseLeaderboard = query(
           gte(xpEvents.createdAt, since),
         ),
       )
-      .groupBy(xpEvents.userId, users.name, users.username, users.image)
+      .groupBy(xpEvents.userId, users.displayName, users.username, users.avatarUrl)
       .orderBy(desc(sql`SUM(${xpEvents.xpAwarded})`))
       .limit(50);
 
