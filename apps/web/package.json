@@ -19,6 +19,7 @@
     "auth:schema": "better-auth generate --config src/lib/server/auth.ts --output src/lib/server/db/auth.schema.ts --yes"
   },
   "dependencies": {
+    "livekit-server-sdk": "catalog:",
     "pg-boss": "^10.1.4"
   },
   "devDependencies": {

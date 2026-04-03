@@ -216,7 +216,7 @@ export const searchCourseCatalog = query(
       )
       .groupBy(userCourses.code, userCourses.title, userCourses.description, userCourses.year, userCourses.creditUnits)
       .limit(20);
-
+    console.log(results)
     if (!userId) return results;
 
     // Mark which ones the user is already enrolled in
@@ -529,9 +529,9 @@ export const getCourseLeaderboard = query(
       .select({
         userId: xpEvents.userId,
         total: sql<number>`SUM(${xpEvents.xpAwarded})`,
-        name: users.name,
+        name: users.displayName,
         username: users.username,
-        image: users.image,
+        image: users.avatarUrl,
       })
       .from(xpEvents)
       .leftJoin(users, eq(xpEvents.userId, users.id))

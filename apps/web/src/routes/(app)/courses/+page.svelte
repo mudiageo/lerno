@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { getMyCourses, enrollCourse, searchCourseCatalog, unenrollCourse } from "./courses.remote";
+  import {
+    getMyCourses,
+    enrollCourse,
+    searchCourseCatalog,
+    unenrollCourse,
+  } from "./courses.remote";
+  import { goto } from "$app/navigation";
   import { Button } from "@lerno/ui/components/ui/button";
   import { Badge } from "@lerno/ui/components/ui/badge";
   import { Input } from "@lerno/ui/components/ui/input";
@@ -26,9 +32,9 @@
 
   let addOpen = $state(false);
   let searchQuery = $state("");
-  let searchResults = $state<any[]>([]);
+  let searchResults: any[] = $state([]);
   let searching = $state(false);
-  let enrolling = $state<Record<string, boolean>>({});
+  let enrolling: Record<string, boolean> = $state({});
 
   // Course level colors
   const levelColors: Record<number, string> = {
@@ -53,7 +59,10 @@
   }
 
   async function doSearch() {
-    if (!searchQuery.trim()) { searchResults = []; return; }
+    if (!searchQuery.trim()) {
+      searchResults = [];
+      return;
+    }
     searching = true;
     try {
       searchResults = await searchCourseCatalog({ query: searchQuery });
@@ -71,7 +80,7 @@
         year: course.year,
         creditUnits: course.creditUnits,
         description: course.description,
-      }).updates(getMyCourses({}).invalidate());
+      }).updates(getMyCourses({}));
       toast.success(`Enrolled in ${course.code}`);
       addOpen = false;
     } catch (e: any) {
@@ -94,17 +103,28 @@
 
 <svelte:head>
   <title>My Courses — Lerno</title>
-  <meta name="description" content="Manage your enrolled courses, study progress, and exam schedule." />
+  <meta
+    name="description"
+    content="Manage your enrolled courses, study progress, and exam schedule."
+  />
 </svelte:head>
 
-<div class="max-w-[var(--feed-max)] w-full mx-auto border-x border-border min-h-screen">
+<div
+  class="max-w-[var(--feed-max)] w-full mx-auto border-x border-border min-h-screen"
+>
   <!-- Header -->
-  <div class="sticky top-0 z-30 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 flex items-center justify-between gap-3">
+  <div
+    class="sticky top-0 z-30 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 flex items-center justify-between gap-3"
+  >
     <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
       <GraduationCap class="size-5 text-brand-500" />
       My Courses
     </h1>
-    <Button size="sm" class="h-8 gap-1.5 text-xs" onclick={() => (addOpen = true)}>
+    <Button
+      size="sm"
+      class="h-8 gap-1.5 text-xs"
+      onclick={() => (addOpen = true)}
+    >
       <Plus class="size-3.5" />
       Add Course
     </Button>
@@ -114,13 +134,16 @@
     {#if courses.length === 0}
       <!-- Empty state -->
       <div class="flex flex-col items-center gap-5 py-20 px-6 text-center">
-        <div class="size-20 rounded-3xl bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center">
+        <div
+          class="size-20 rounded-3xl bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center"
+        >
           <GraduationCap class="size-10 text-brand-500" />
         </div>
         <div>
           <h2 class="text-xl font-bold text-foreground mb-1">No courses yet</h2>
           <p class="text-sm text-muted-foreground max-w-xs">
-            Add your courses to get personalized study content, quizzes, flashcards, and exam reminders.
+            Add your courses to get personalized study content, quizzes,
+            flashcards, and exam reminders.
           </p>
         </div>
         <Button onclick={() => (addOpen = true)} class="gap-2">
@@ -133,35 +156,64 @@
         {#each Object.entries(grouped).sort(([a], [b]) => Number(a) - Number(b)) as [level, levelCourses]}
           <section>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest">{level}L</span>
+              <span
+                class="text-xs font-bold text-muted-foreground uppercase tracking-widest"
+                >{level}L</span
+              >
               <div class="flex-1 h-px bg-border"></div>
-              <span class="text-xs text-muted-foreground">{levelCourses.length} course{levelCourses.length !== 1 ? 's' : ''}</span>
+              <span class="text-xs text-muted-foreground"
+                >{levelCourses.length} course{levelCourses.length !== 1
+                  ? "s"
+                  : ""}</span
+              >
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {#each levelCourses as course (course.id)}
-                <a
-                  href="/courses/{course.code}"
-                  class="group relative flex flex-col gap-3 p-4 rounded-2xl border border-border bg-card hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-lg hover:shadow-brand-500/5 transition-all"
+                <div
+                  onclick={() => goto(`/courses/${course.code}`)}
+                  role="button"
+                  tabindex="0"
+                  onkeydown={(e) =>
+                    e.key === "Enter" && goto(`/courses/${course.code}`)}
+                  class="group relative flex flex-col gap-3 p-4 rounded-2xl border border-border bg-card hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-lg hover:shadow-brand-500/5 transition-all cursor-pointer"
                 >
                   <!-- Top row -->
                   <div class="flex items-start justify-between gap-2">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <span class="text-xs font-bold px-2 py-0.5 rounded-full border {getLevelColor(course.year)}">
+                      <span
+                        class="text-xs font-bold px-2 py-0.5 rounded-full border {getLevelColor(
+                          course.year,
+                        )}"
+                      >
                         {course.code}
                       </span>
                       {#if course.semester}
-                        <span class="text-[10px] text-muted-foreground capitalize">{course.semester} sem</span>
+                        <span
+                          class="text-[10px] text-muted-foreground capitalize"
+                          >{course.semester} sem</span
+                        >
                       {/if}
                     </div>
-                    <ChevronRight class="size-4 text-muted-foreground/40 group-hover:text-brand-500 shrink-0 transition-colors mt-0.5" />
+                    <ChevronRight
+                      class="size-4 text-muted-foreground/40 group-hover:text-brand-500 shrink-0 transition-colors mt-0.5"
+                    />
                   </div>
 
                   <!-- Title -->
                   <div>
-                    <p class="text-sm font-semibold text-foreground leading-snug line-clamp-2">{course.title}</p>
+                    <p
+                      class="text-sm font-semibold text-foreground leading-snug line-clamp-2"
+                    >
+                      {course.title}
+                    </p>
                     {#if course.creditUnits}
-                      <p class="text-[11px] text-muted-foreground mt-0.5">{course.creditUnits} credit unit{course.creditUnits !== 1 ? 's' : ''}</p>
+                      <p class="text-[11px] text-muted-foreground mt-0.5">
+                        {course.creditUnits} credit unit{course.creditUnits !==
+                        1
+                          ? "s"
+                          : ""}
+                      </p>
                     {/if}
                   </div>
 
@@ -169,7 +221,9 @@
                   <div class="space-y-1">
                     <div class="flex items-center justify-between text-[11px]">
                       <span class="text-muted-foreground">Mastery</span>
-                      <span class="font-bold text-foreground">{course.masteryPct}%</span>
+                      <span class="font-bold text-foreground"
+                        >{course.masteryPct}%</span
+                      >
                     </div>
                     <div class="h-1.5 rounded-full bg-muted overflow-hidden">
                       <div
@@ -180,9 +234,13 @@
                   </div>
 
                   <!-- Stats row -->
-                  <div class="flex items-center gap-3 text-[11px] text-muted-foreground pt-1 border-t border-border/60">
+                  <div
+                    class="flex items-center gap-3 text-[11px] text-muted-foreground pt-1 border-t border-border/60"
+                  >
                     {#if course.flashcardsDue > 0}
-                      <span class="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                      <span
+                        class="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium"
+                      >
                         <Brain class="size-3" />
                         {course.flashcardsDue} due
                       </span>
@@ -194,7 +252,9 @@
                       </span>
                     {/if}
                     {#if course.nextExam}
-                      <span class="flex items-center gap-1 text-red-500 dark:text-red-400 font-medium ml-auto">
+                      <span
+                        class="flex items-center gap-1 text-red-500 dark:text-red-400 font-medium ml-auto"
+                      >
                         <Calendar class="size-3" />
                         {formatCountdown(course.nextExam.scheduledAt)}
                       </span>
@@ -202,7 +262,7 @@
                   </div>
 
                   <!-- Quick actions -->
-                  <div class="flex gap-2" onclick={(e) => e.preventDefault()}>
+                  <div class="flex gap-2" onclick={(e) => e.stopPropagation()}>
                     <a
                       href="/courses/{course.code}/study"
                       class="flex-1 flex items-center justify-center gap-1 h-7 text-[11px] font-medium rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-950/60 transition-colors"
@@ -225,7 +285,7 @@
                       Exams
                     </a>
                   </div>
-                </a>
+                </div>
               {/each}
             </div>
           </section>
@@ -277,12 +337,16 @@
         <Plus class="size-4" />
         Add a Course
       </Dialog.Title>
-      <Dialog.Description>Search for a course by code or title</Dialog.Description>
+      <Dialog.Description
+        >Search for a course by code or title</Dialog.Description
+      >
     </Dialog.Header>
 
     <div class="space-y-4">
       <div class="relative">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Search
+          class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+        />
         <Input
           class="pl-9"
           placeholder="e.g. CPE375 or Computer Architecture…"
@@ -291,7 +355,9 @@
         />
       </div>
 
-      <div class="max-h-72 overflow-y-auto divide-y divide-border rounded-xl border">
+      <div
+        class="max-h-72 overflow-y-auto divide-y divide-border rounded-xl border"
+      >
         {#if searching}
           {#each Array(4) as _}
             <div class="p-3 space-y-1">
@@ -301,17 +367,30 @@
           {/each}
         {:else if searchResults.length > 0}
           {#each searchResults as result (result.code)}
-            <div class="flex items-center justify-between p-3 hover:bg-accent/40 transition-colors">
+            <div
+              class="flex items-center justify-between p-3 hover:bg-accent/40 transition-colors"
+            >
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-brand-600 dark:text-brand-400">{result.code}</span>
+                  <span
+                    class="text-xs font-bold text-brand-600 dark:text-brand-400"
+                    >{result.code}</span
+                  >
                   {#if result.year}
-                    <span class="text-[10px] text-muted-foreground">{result.year}L</span>
+                    <span class="text-[10px] text-muted-foreground"
+                      >{result.year}L</span
+                    >
                   {/if}
                 </div>
-                <p class="text-sm font-medium text-foreground mt-0.5 line-clamp-1">{result.title}</p>
+                <p
+                  class="text-sm font-medium text-foreground mt-0.5 line-clamp-1"
+                >
+                  {result.title}
+                </p>
                 {#if result.creditUnits}
-                  <p class="text-[11px] text-muted-foreground">{result.creditUnits} units</p>
+                  <p class="text-[11px] text-muted-foreground">
+                    {result.creditUnits} units
+                  </p>
                 {/if}
               </div>
               <Button
@@ -321,14 +400,22 @@
                 disabled={enrolling[result.code] || result.enrolled}
                 onclick={() => handleEnroll(result)}
               >
-                {enrolling[result.code] ? "…" : result.enrolled ? "Added" : "Add"}
+                {enrolling[result.code]
+                  ? "…"
+                  : result.enrolled
+                    ? "Added"
+                    : "Add"}
               </Button>
             </div>
           {/each}
         {:else if searchQuery.length > 0}
-          <div class="py-8 text-center text-sm text-muted-foreground">No courses found</div>
+          <div class="py-8 text-center text-sm text-muted-foreground">
+            No courses found
+          </div>
         {:else}
-          <div class="py-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
+          <div
+            class="py-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-2"
+          >
             <BookOpen class="size-8 opacity-30" />
             Search to find courses
           </div>
