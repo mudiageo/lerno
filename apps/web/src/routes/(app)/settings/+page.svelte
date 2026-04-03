@@ -4,6 +4,7 @@
   import * as Avatar from "@lerno/ui/components/ui/avatar";
   import { Badge } from "@lerno/ui/components/ui/badge";
   import { useSession } from "$lib/auth.svelte";
+  import HelpCircle from "@lucide/svelte/icons/help-circle";
   import User from "@lucide/svelte/icons/user";
   import Bell from "@lucide/svelte/icons/bell";
   import Shield from "@lucide/svelte/icons/shield";

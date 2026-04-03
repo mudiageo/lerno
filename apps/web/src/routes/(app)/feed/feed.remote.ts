@@ -15,6 +15,68 @@ const FeedInput = v.object({
   communityId: v.optional(v.string()), // filter by community
 });
 
+export const getPostById = query(v.object({ postId: v.string() }), async ({ postId }) => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
+
+  const [post] = await db
+    .select({
+      id: posts.id,
+      postType: posts.postType,
+      content: posts.content,
+      courseCode: sql<string>`${userCourses.code}`.as('courseCode'),
+      topicTags: posts.topicTags,
+      likeCount: posts.likeCount,
+      replyCount: posts.replyCount,
+      repostCount: posts.repostCount,
+      viewCount: posts.viewCount,
+      aiGenerated: posts.aiGenerated,
+      createdAt: posts.createdAt,
+      authorId: posts.authorId,
+      authorName: users.displayName,
+      authorUsername: users.username,
+      authorImage: users.avatarUrl,
+      parentId: posts.parentId,
+      repostOfId: posts.repostOfId,
+      quoteOfId: posts.quoteOfId,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(userCourses, eq(posts.courseId, userCourses.id))
+    .where(and(eq(posts.id, postId), eq(posts.isVisible, true)))
+    .limit(1);
+
+  if (!post) throw new Error('Post not found');
+
+  let liked = false;
+  let bookmarked = false;
+
+  if (userId) {
+    const myInteractions = await db
+      .select({ type: interactions.type })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.userId, userId),
+          eq(interactions.postId, postId),
+          inArray(interactions.type, ['like', 'bookmark'])
+        )
+      );
+    myInteractions.forEach((i) => {
+      if (i.type === 'like') liked = true;
+      if (i.type === 'bookmark') bookmarked = true;
+    });
+  }
+
+  return {
+    ...post,
+    author: { name: post.authorName, username: post.authorUsername, image: post.authorImage },
+    liked,
+    bookmarked,
+    createdAt: post.createdAt?.toISOString() ?? new Date().toISOString(),
+  };
+});
+
 export const getFeed = query(FeedInput, async (input) => {
   const event = getRequestEvent();
   const userId = event.locals?.user?.id;

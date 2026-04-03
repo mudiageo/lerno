@@ -25,6 +25,7 @@
   import { Separator } from "$lib/components/ui/separator";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Skeleton } from "$lib/components/ui/skeleton";
+  import { goto } from "$app/navigation";
   import QuizPost from "./quiz-post.svelte";
   import FlashcardPost from "./flashcard-post.svelte";
   import PollPost from "./poll-post.svelte";
@@ -209,8 +210,9 @@
 <!-- Intersection observer for impression -->
 <article
   {@attach impressionAttachment}
-  class="post-card group border-b border-border/60 px-4 pt-3 pb-2 hover:bg-accent/40 cursor-pointer transition-colors duration-100"
+  class="post-card group border-b border-border/60 px-4 pt-3 pb-2 hover:bg-accent/40 cursor-pointer transition-colors duration-100 relative"
   style="animation-delay: {index * 40}ms"
+  onclick={() => { goto(`/post/${post.id}`); }}
 >
   <div class="flex gap-3">
     <!-- Avatar column -->
