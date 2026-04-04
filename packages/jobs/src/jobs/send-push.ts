@@ -1,7 +1,7 @@
 import webpush from 'web-push';
 import { db } from '@lerno/db';
 import { pushSubscriptions } from '@lerno/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq } from '@lerno/db/drizzle';
 
 if (process.env.VAPID_PUBLIC_KEY) {
   webpush.setVapidDetails(

@@ -2,7 +2,7 @@ import { storage } from '@lerno/storage';
 import { ai, buildOCRExtractionPrompt } from '@lerno/ai';
 import { db } from '@lerno/db';
 import { courseMaterials, topicMastery } from '@lerno/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq } from '@lerno/db/drizzle';
 import PgBoss from 'pg-boss';
 
 export async function processUploadJob(job: { data: { materialId: string; boss: PgBoss } }) {

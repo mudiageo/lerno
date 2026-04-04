@@ -1,7 +1,7 @@
 import { db } from '@lerno/db';
 import { users, userCourses, posts, youtubeCache } from '@lerno/db/schema';
 import { ai } from '@lerno/ai';
-import { eq, sql, and } from 'drizzle-orm';
+import { eq, sql, and } from '@lerno/db/drizzle';
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY!;
 const YOUTUBE_BASE = 'https://www.googleapis.com/youtube/v3';
@@ -135,7 +135,7 @@ async function searchYouTube(query: string, maxResults = 10): Promise<YouTubeVid
     let durationSecs: number | undefined;
     try {
       durationSecs = await getVideoDuration(videoId);
-    } catch {}
+    } catch { }
 
     items.push({
       videoId,
@@ -170,8 +170,8 @@ async function getVideoDuration(videoId: string): Promise<number | undefined> {
   if (!match) return undefined;
 
   return (parseInt(match[1] ?? '0') * 3600) +
-         (parseInt(match[2] ?? '0') * 60) +
-         (parseInt(match[3] ?? '0'));
+    (parseInt(match[2] ?? '0') * 60) +
+    (parseInt(match[3] ?? '0'));
 }
 
 // ─── AI Timestamp generation ──────────────────────────────────────────────────

@@ -1,10 +1,10 @@
 import { db } from '@lerno/db';
 import { users, subscriptions } from '@lerno/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and } from '@lerno/db/drizzle';
 
 export async function downgradeUserJob(job: { data: { userId: string } }) {
   const { userId } = job.data;
-  
+
   // Verify subscription is actually cancelled/expired
   const sub = await db.query.subscriptions.findFirst({
     where: and(
