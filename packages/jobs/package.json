@@ -34,6 +34,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
+    "trigger": "tsx src/trigger.ts",
     "test": "vp test",
     "check": "vp check",
     "prepublishOnly": "vp run build"
