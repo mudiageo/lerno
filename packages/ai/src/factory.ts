@@ -16,24 +16,30 @@ import { SimulatedTtsProvider } from './providers/simulated/tts';
 import { SimulatedAudioProvider } from './providers/simulated/audio';
 import { SimulatedVideoGenerator } from './providers/simulated/video';
 
+import 'dotenv/config';
+
 export class ProviderFactory {
-  static getLlmProvider(): LlmProvider {
-    if (process.env.AI_LLM_PROVIDER === 'simulated') return new SimulatedLlmProvider();
+  static getLlmProvider(type?: string): LlmProvider {
+    const provider = type || process.env.AI_PROVIDER || process.env.LLM_PROVIDER || 'google';
+    if (provider === 'simulated') return new SimulatedLlmProvider();
     return new GeminiLlmProvider();
   }
 
-  static getImageProvider(): ImageProvider {
-    if (process.env.AI_IMAGE_PROVIDER === 'simulated') return new SimulatedImageProvider();
+  static getImageProvider(type?: string): ImageProvider {
+    const provider = type || process.env.AI_PROVIDER || process.env.IMAGE_PROVIDER || 'google';
+    if (provider === 'simulated') return new SimulatedImageProvider();
     return new NanoBananaImageProvider();
   }
 
-  static getTtsProvider(): TtsProvider {
-    if (process.env.AI_TTS_PROVIDER === 'simulated') return new SimulatedTtsProvider();
+  static getTtsProvider(type?: string): TtsProvider {
+    const provider = type || process.env.AI_PROVIDER || process.env.TTS_PROVIDER || 'google';
+    if (provider === 'simulated') return new SimulatedTtsProvider();
     return new GeminiTtsProvider();
   }
 
-  static getAudioProvider(): AudioProvider {
-    if (process.env.AI_AUDIO_PROVIDER === 'simulated') return new SimulatedAudioProvider();
+  static getAudioProvider(type?: string): AudioProvider {
+    const provider = type || process.env.AI_PROVIDER || process.env.AUDIO_PROVIDER || 'google';
+    if (provider === 'simulated') return new SimulatedAudioProvider();
     return new LyriaAudioProvider();
   }
 

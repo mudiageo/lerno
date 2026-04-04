@@ -28,6 +28,7 @@
     "@google/genai": "catalog:",
     "@google/generative-ai": "^0.21.0",
     "@lerno/storage": "workspace:*",
+    "dotenv": "catalog:",
     "fluent-ffmpeg": "catalog:",
     "valibot": "catalog:",
     "wav": "^1.0.2"
@@ -40,8 +41,8 @@
     "prepublishOnly": "vp run build"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
     "@types/fluent-ffmpeg": "catalog:",
+    "@types/node": "^25.5.0",
     "@typescript/native-preview": "7.0.0-dev.20260316.1",
     "bumpp": "^11.0.1",
     "typescript": "^5.9.3",

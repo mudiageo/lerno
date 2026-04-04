@@ -22,6 +22,8 @@ const VideoPlanSchema = v.object({
  * Generates everything in one go using a single complex JSON prompt.
  * Best for high-tier models like 3.1 Flash.
  */
+export type OrchestrationMode = 'single-prompt' | 'step-by-step';
+
 export class SinglePromptStrategy implements OrchestrationStrategy {
   async plan(prompt: string, llm: LlmProvider): Promise<VideoPlan> {
     const systemPrompt = `

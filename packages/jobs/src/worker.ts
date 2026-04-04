@@ -1,5 +1,5 @@
 import PgBoss from 'pg-boss';
-import { generateContentJob } from './jobs/generate-content';
+import { generateContentJob, generateVideosJob } from './jobs/generate-content';
 import { sendEmailJob } from './jobs/send-email';
 import { sendPushJob } from './jobs/send-push';
 import { processUploadJob } from './jobs/process-upload';
@@ -16,6 +16,7 @@ async function start() {
 
   // Register handlers
   await boss.work('generate-content', generateContentJob as any);
+  await boss.work('generate-videos', generateVideosJob as any);
   await boss.work('send-email', sendEmailJob as any);
   await boss.work('send-push', sendPushJob as any);
   await boss.work('process-upload', processUploadJob as any);
