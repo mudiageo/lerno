@@ -151,7 +151,7 @@ Generate a mock exam for ${params.courseCode}: ${params.courseTitle}.
 Topics to cover: ${params.topics.join(', ')}
 Number of questions: ${params.questionCount ?? 20}
 Time limit: ${params.timeLimitMins ?? 60} minutes
-${params.pastQuestions?.length ? \`\\nStyle reference (past exam questions):\\n\${params.pastQuestions.join('\\n')}\` : ''}
+${params.pastQuestions?.length ? `\nStyle reference (past exam questions):\n${params.pastQuestions.join('\n')}` : ''}
 
 Create a realistic exam paper with a mix of:
 - 40% easy questions (recall/definition)
@@ -258,7 +258,7 @@ Return ONLY this JSON:
 `;
 
 export function buildModerationPrompt(content: string) {
-  return \`Moderate this student-submitted content:\\n\\n\${content}\`;
+  return `Moderate this student-submitted content:\n\n${content}`;
 }
 
 export function buildOCRExtractionPrompt(params: {
@@ -266,8 +266,8 @@ export function buildOCRExtractionPrompt(params: {
   courseTitle: string;
   extractedText: string;
 }) {
-  return \`
-You have been given raw OCR-extracted text from a student's course notes for \${params.courseCode}: \${params.courseTitle}.
+  return `
+You have been given raw OCR-extracted text from a student's course notes for ${params.courseCode}: ${params.courseTitle}.
 
 The text may contain OCR errors, garbled characters, or formatting issues.
 
@@ -295,5 +295,5 @@ Return JSON:
     "Potential exam question 2"
   ]
 }
-\`;
+`;
 }
