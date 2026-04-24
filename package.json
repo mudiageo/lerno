@@ -7,6 +7,7 @@
     "ready": "vp fmt && vp lint --type-aware && vp run test -r && vp run build -r"
   },
   "devDependencies": {
+    "portless": "catalog:",
     "vite-plus": "catalog:"
   },
   "engines": {

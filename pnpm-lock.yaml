@@ -60,6 +60,9 @@ catalogs:
     paneforge:
       specifier: ^1.0.2
       version: 1.0.2
+    portless:
+      specifier: ^0.10.3
+      version: 0.10.3
     postgres:
       specifier: ^3.4.8
       version: 3.4.8
@@ -100,6 +103,9 @@ importers:
 
   .:
     devDependencies:
+      portless:
+        specifier: 'catalog:'
+        version: 0.10.3
       vite-plus:
         specifier: 'catalog:'
         version: 0.1.15(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(esbuild@0.27.7)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@2.0.1))(publint@0.3.18)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.0)(@emnapi/runtime@1.9.0)(@types/node@25.5.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
@@ -360,6 +366,9 @@ importers:
       '@lerno/storage':
         specifier: workspace:*
         version: link:../storage
+      dotenv:
+        specifier: 'catalog:'
+        version: 17.3.1
       pg-boss:
         specifier: ^10.1.4
         version: 10.4.2
@@ -1189,12 +1198,6 @@ packages:
     cpu: [arm]
     os: [android]
 
-  '@esbuild/android-arm@0.27.7':
-    resolution: {integrity: sha512-jbPXvB4Yj2yBV7HUfE2KHe4GJX51QplCN1pGbYjvsyCZbQmies29EoJbkEc+vYuU5o45AfQn37vZlyXy4YJ8RQ==}
-    engines: {node: '>=18'}
-    cpu: [arm]
-    os: [android]
-
   '@esbuild/android-x64@0.18.20':
     resolution: {integrity: sha512-8GDdlePJA8D6zlZYJV/jnrRAi6rOiNaCC/JclcXpB+KIuvfBN4owLtgzY2bsxnx666XjJx2kDPUmnTtR8qKQUg==}
     engines: {node: '>=12'}
@@ -1257,12 +1260,6 @@ packages:
 
   '@esbuild/freebsd-arm64@0.25.12':
     resolution: {integrity: sha512-gA0Bx759+7Jve03K1S0vkOu5Lg/85dou3EseOGUes8flVOGxbhDDh/iZaoek11Y8mtyKPGF3vP8XhnkDEAmzeg==}
-    engines: {node: '>=18'}
-    cpu: [arm64]
-    os: [freebsd]
-
-  '@esbuild/freebsd-arm64@0.27.7':
-    resolution: {integrity: sha512-B48PqeCsEgOtzME2GbNM2roU29AMTuOIN91dsMO30t+Ydis3z/3Ngoj5hhnsOSSwNzS+6JppqWsuhTp6E82l2w==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [freebsd]
@@ -4875,6 +4872,12 @@ packages:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
 
+  portless@0.10.3:
+    resolution: {integrity: sha512-lXbVUsNiwWMKJGMi49HhTMW0lS7u0EzawonDZQ+yglSnHioiQK18Y4Fe0Ilk+TuXej71E/nTOHIFIBjUGvTm9w==}
+    engines: {node: '>=20'}
+    os: [darwin, linux, win32]
+    hasBin: true
+
   postcss-selector-parser@6.0.10:
     resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
     engines: {node: '>=4'}
@@ -6728,9 +6731,6 @@ snapshots:
   '@esbuild/android-arm@0.25.12':
     optional: true
 
-  '@esbuild/android-arm@0.27.7':
-    optional: true
-
   '@esbuild/android-x64@0.18.20':
     optional: true
 
@@ -6762,9 +6762,6 @@ snapshots:
     optional: true
 
   '@esbuild/freebsd-arm64@0.25.12':
-    optional: true
-
-  '@esbuild/freebsd-arm64@0.27.7':
     optional: true
 
   '@esbuild/freebsd-x64@0.18.20':
@@ -9475,12 +9472,10 @@ snapshots:
   esbuild@0.27.7:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.27.7
-      '@esbuild/android-arm': 0.27.7
       '@esbuild/android-arm64': 0.27.7
       '@esbuild/android-x64': 0.27.7
       '@esbuild/darwin-arm64': 0.27.7
       '@esbuild/darwin-x64': 0.27.7
-      '@esbuild/freebsd-arm64': 0.27.7
       '@esbuild/freebsd-x64': 0.27.7
       '@esbuild/linux-arm': 0.27.7
       '@esbuild/linux-arm64': 0.27.7
@@ -10398,6 +10393,8 @@ snapshots:
       fsevents: 2.3.2
 
   pngjs@7.0.0: {}
+
+  portless@0.10.3: {}
 
   postcss-selector-parser@6.0.10:
     dependencies:

@@ -4,14 +4,14 @@ packages:
   - tools/*
 
 catalog:
-  "@fontsource-variable/inter": ^5.2.8
-  "@google/genai": ^1.48.0
-  "@internationalized/date": ^3.12.0
-  "@lucide/svelte": ^0.577.0
-  "@sveltejs/package": ^2.5.7
-  "@tanstack/table-core": ^8.21.3
-  "@types/fluent-ffmpeg": ^2.1.28
-  "@types/node": ^24
+  '@fontsource-variable/inter': ^5.2.8
+  '@google/genai': ^1.48.0
+  '@internationalized/date': ^3.12.0
+  '@lucide/svelte': ^0.577.0
+  '@sveltejs/package': ^2.5.7
+  '@tanstack/table-core': ^8.21.3
+  '@types/fluent-ffmpeg': ^2.1.28
+  '@types/node': ^24
   auth: ^1.5.6
   bits-ui: ^2.16.3
   clsx: ^2.1.1
@@ -28,6 +28,7 @@ catalog:
   mode-watcher: ^1.1.0
   paneforge: ^1.0.2
   pg-boss: ^10.1.4
+  portless: ^0.10.3
   postgres: ^3.4.8
   svelte-sonner: ^1.1.0
   sveltekit-superforms: ^2.30.0
@@ -44,17 +45,17 @@ catalog:
 catalogMode: prefer
 
 overrides:
-  vite: "catalog:"
-  vitest: "catalog:"
-  pg-boss: "catalog:"
-  fluent-ffmpeg: "catalog:"
-  "@google/genai": "catalog:"
-  "@types/fluent-ffmpeg": "catalog:"
+  '@google/genai': 'catalog:'
+  '@types/fluent-ffmpeg': 'catalog:'
+  fluent-ffmpeg: 'catalog:'
+  pg-boss: 'catalog:'
+  vite: 'catalog:'
+  vitest: 'catalog:'
 
 peerDependencyRules:
   allowAny:
     - vite
     - vitest
   allowedVersions:
-    vite: "*"
-    vitest: "*"
+    vite: '*'
+    vitest: '*'

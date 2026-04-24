@@ -16,7 +16,7 @@ export default defineConfig({
     },
     run: {
         tasks: {
-            'dev': { command: 'vp dev', cwd: 'apps/web' },
+            'dev': { command: 'portless lerno vp dev', cwd: 'apps/web' },
             'build:web': { command: 'vp build', cwd: 'apps/web' },
             'build:desktop': { command: 'tauri build', cwd: 'apps/desktop' },
             'build:android': { command: 'tauri android build', cwd: 'apps/desktop' },
