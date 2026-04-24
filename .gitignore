@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.svelte-kit/*
 
 # Editor directories and files
 .vscode/*
@@ -23,5 +24,17 @@ dist-ssr
 *.sln
 *.sw?
 
+
+# Env
 .env
-.env.local
+.env.*
+!.env.example
+!.env.test
+
+
+
+# Env
+packages/**/.env
+**/.env.*
+!**/.env.example
+!**/.env.test
