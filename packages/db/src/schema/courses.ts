@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, boolean, timestamp, integer, pgEnum, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, boolean, timestamp, integer, jsonb, pgEnum, index } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { users } from './users';
 
@@ -39,14 +39,21 @@ export const courseSchedule = pgTable('course_schedule', {
 }));
 
 export const courseMaterials = pgTable('course_materials', {
-  id:          uuid('id').primaryKey().defaultRandom(),
-  courseId:    uuid('course_id').references(() => userCourses.id, { onDelete: 'cascade' }).notNull(),
-  userId:      uuid('user_id').references(() => users.id).notNull(),
-  type:        varchar('type', { length: 20 }).notNull(),
-  title:       text('title').notNull(),
-  storageKey:  text('storage_key'),
-  url:         text('url'),
-  ocrText:     text('ocr_text'),
-  processed:   boolean('processed').default(false),
-  createdAt:   timestamp('created_at').defaultNow(),
+  id:                 uuid('id').primaryKey().defaultRandom(),
+  courseId:           uuid('course_id').references(() => userCourses.id, { onDelete: 'cascade' }).notNull(),
+  userId:             uuid('user_id').references(() => users.id).notNull(),
+  type:               varchar('type', { length: 20 }).notNull(),
+  title:              text('title').notNull(),
+  storageKey:         text('storage_key'),
+  url:                text('url'),
+  ocrText:            text('ocr_text'),
+  processed:          boolean('processed').default(false),
+  // AI-generated metadata
+  summary:            text('summary'),
+  topics:             jsonb('topics').$type<string[]>(),
+  keyPoints:          jsonb('key_points').$type<Array<{ topic: string; point: string }>>(),
+  definitions:        jsonb('definitions').$type<Array<{ term: string; definition: string }>>(),
+  potentialQuestions: jsonb('potential_questions').$type<string[]>(),
+  processingError:    text('processing_error'),
+  createdAt:          timestamp('created_at').defaultNow(),
 });

@@ -297,3 +297,77 @@ Return JSON:
 }
 `;
 }
+
+export function buildMaterialSummaryPrompt(params: {
+  courseCode: string;
+  courseTitle: string;
+  title: string;
+  type: string;
+  extractedText?: string;
+}) {
+  const hasContent = params.extractedText && params.extractedText.trim().length > 50;
+  return `
+You are helping students study by analysing their uploaded course material for ${params.courseCode}: ${params.courseTitle}.
+
+Material title: "${params.title}"
+Material type: ${params.type}
+${hasContent ? `\nExtracted content (may be partial):\n${params.extractedText!.slice(0, 4000)}` : '\nNote: No readable text was extracted from this file — infer from the title and type.'}
+
+Your task:
+1. Write a concise summary (2-4 sentences) describing what this material covers
+2. List the main topics covered (up to 8 topics)
+3. Extract the most important key points (up to 10)
+4. Extract any definitions or key terms (up to 10)
+5. Suggest potential exam/quiz questions based on this material (up to 5)
+
+Return ONLY valid JSON:
+{
+  "summary": "2-4 sentence summary of what this material covers",
+  "topics": ["topic 1", "topic 2"],
+  "keyPoints": [
+    { "topic": "topic name", "point": "key concept or fact" }
+  ],
+  "definitions": [
+    { "term": "term", "definition": "definition" }
+  ],
+  "potentialQuestions": [
+    "Exam question 1?",
+    "Exam question 2?"
+  ]
+}
+`;
+}
+
+export function buildMaterialImagePrompt(params: {
+  courseCode: string;
+  courseTitle: string;
+  title: string;
+}) {
+  return `
+Analyse this image uploaded as a study material for the course ${params.courseCode}: ${params.courseTitle}.
+The student titled it: "${params.title}".
+
+Extract all visible text, diagrams, charts, or equations. Then:
+1. Summarise what this image covers (2-3 sentences)
+2. List main topics shown
+3. Extract key points or facts visible
+4. Extract any definitions or labelled terms
+5. Suggest potential study questions based on this image
+
+Return ONLY valid JSON:
+{
+  "summary": "2-3 sentence summary",
+  "topics": ["topic 1", "topic 2"],
+  "keyPoints": [
+    { "topic": "topic name", "point": "key fact or concept" }
+  ],
+  "definitions": [
+    { "term": "labelled term", "definition": "what it means" }
+  ],
+  "potentialQuestions": [
+    "Question based on image content?"
+  ]
+}
+`;
+}
+

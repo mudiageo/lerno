@@ -8,6 +8,17 @@ import {
 import { eq, and, desc, sql, asc, gte, lt, ilike, or, count } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 import { storage } from '@lerno/storage';
+import {
+  ai,
+  buildMaterialSummaryPrompt,
+  buildMaterialImagePrompt,
+  CONTENT_GENERATION_SYSTEM_PROMPT,
+  buildQuizPrompt,
+  buildFlashcardPrompt,
+  buildTextPostPrompt,
+  buildPollPrompt,
+  buildThreadPrompt,
+} from '@lerno/ai';
 
 // ─── My Courses (dashboard) ───────────────────────────────────────────────────
 
@@ -469,7 +480,7 @@ export const uploadCourseMaterial = form(
     if (!userId) throw new Error('Not authenticated');
 
     const [course] = await db
-      .select({ id: userCourses.id })
+      .select({ id: userCourses.id, title: userCourses.title })
       .from(userCourses)
       .where(and(eq(userCourses.code, courseCode), eq(userCourses.userId, userId)))
       .limit(1);
@@ -478,7 +489,6 @@ export const uploadCourseMaterial = form(
 
     const storageKey = `materials/${userId}/${courseCode}/${Date.now()}-${file.name}`;
     
-    
     // Detect type
     const type: 'pdf' | 'slide' | 'note' | 'image' | 'video' | 'audio' | 'other' =
       file.type.includes("pdf")? "pdf" :
@@ -486,7 +496,6 @@ export const uploadCourseMaterial = form(
       file.type.includes("video")? "video" :
       file.type.includes("audio")? "audio" :
       /\.(ppt|pptx|key)$/i.test(file.name)? "slide" : "other";
-
 
     const [material] = await db
       .insert(courseMaterials)
@@ -500,10 +509,19 @@ export const uploadCourseMaterial = form(
       })
       .returning();
       
-    const contentType = file.type || "application/octet-stream"
-console.log(file)
-    const uploadUrl =  await storage.upload(storageKey, file.stream(), contentType)
-    
+    const contentType = file.type || "application/octet-stream";
+    const uploadUrl = await storage.upload(storageKey, file.stream(), contentType);
+
+    // AI enrichment — run asynchronously so the upload response is fast
+    void enrichMaterialWithAI({
+      materialId: material.id,
+      courseCode,
+      courseTitle: course.title,
+      title,
+      type,
+      file,
+    });
+
     await getCourseMaterials({ courseCode }).refresh();
 
     return {
@@ -513,6 +531,224 @@ console.log(file)
     };
   },
 );
+
+// ─── AI material enrichment (runs async after upload) ─────────────────────────
+
+async function enrichMaterialWithAI(params: {
+  materialId: string;
+  courseCode: string;
+  courseTitle: string;
+  title: string;
+  type: string;
+  file: File;
+}) {
+  try {
+    let aiResult: {
+      summary: string;
+      topics: string[];
+      keyPoints: Array<{ topic: string; point: string }>;
+      definitions: Array<{ term: string; definition: string }>;
+      potentialQuestions: string[];
+    };
+
+    if (params.type === 'image') {
+      // Use vision API for images
+      const arrayBuffer = await params.file.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const prompt = buildMaterialImagePrompt({
+        courseCode: params.courseCode,
+        courseTitle: params.courseTitle,
+        title: params.title,
+      });
+      const raw = await ai.generateWithVision({
+        prompt,
+        imageBase64: base64,
+        mimeType: params.file.type,
+      });
+      aiResult = JSON.parse(raw);
+    } else {
+      // Try to extract text from non-binary files; fall back to title-only
+      let extractedText = '';
+      if (params.type !== 'video' && params.type !== 'audio') {
+        try {
+          extractedText = await params.file.text();
+        } catch {
+          // Binary file — no extractable text
+        }
+      }
+
+      const prompt = buildMaterialSummaryPrompt({
+        courseCode: params.courseCode,
+        courseTitle: params.courseTitle,
+        title: params.title,
+        type: params.type,
+        extractedText: extractedText.slice(0, 8000),
+      });
+      const raw = await ai.generate({
+        messages: [{ role: 'user', content: prompt }],
+        systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
+        jsonMode: true,
+        maxTokens: 1500,
+      });
+      aiResult = JSON.parse(raw);
+    }
+
+    await db
+      .update(courseMaterials)
+      .set({
+        summary: aiResult.summary ?? null,
+        topics: aiResult.topics ?? [],
+        keyPoints: aiResult.keyPoints ?? [],
+        definitions: aiResult.definitions ?? [],
+        potentialQuestions: aiResult.potentialQuestions ?? [],
+        ocrText: aiResult.topics?.join(', ') ?? null,
+        processed: true,
+        processingError: null,
+      })
+      .where(eq(courseMaterials.id, params.materialId));
+  } catch (err: any) {
+    console.error('[AI material enrichment] failed:', err?.message ?? err);
+    await db
+      .update(courseMaterials)
+      .set({ processingError: String(err?.message ?? 'Unknown error'), processed: false })
+      .where(eq(courseMaterials.id, params.materialId));
+  }
+}
+
+// ─── AI Post Generation ───────────────────────────────────────────────────────
+
+const GenerateAIPostInput = v.object({
+  courseCode: v.string(),
+  postType: v.picklist(['text', 'quiz', 'flashcard', 'poll', 'thread']),
+  topic: v.optional(v.string()),
+  materialId: v.optional(v.string()),
+  difficulty: v.optional(v.picklist(['easy', 'medium', 'hard'])),
+});
+
+export const generateAIPost = command(GenerateAIPostInput, async (input) => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
+  if (!userId) throw new Error('Not authenticated');
+
+  const [course] = await db
+    .select({ id: userCourses.id, title: userCourses.title, code: userCourses.code })
+    .from(userCourses)
+    .where(and(eq(userCourses.code, input.courseCode), eq(userCourses.userId, userId)))
+    .limit(1);
+
+  if (!course) throw new Error('Course not found');
+
+  // Fetch material context if a materialId was provided
+  let context: string | undefined;
+  let topic = input.topic ?? '';
+
+  if (input.materialId) {
+    const [mat] = await db
+      .select({
+        title: courseMaterials.title,
+        ocrText: courseMaterials.ocrText,
+        summary: courseMaterials.summary,
+        topics: courseMaterials.topics,
+        keyPoints: courseMaterials.keyPoints,
+        definitions: courseMaterials.definitions,
+        potentialQuestions: courseMaterials.potentialQuestions,
+      })
+      .from(courseMaterials)
+      .where(and(eq(courseMaterials.id, input.materialId), eq(courseMaterials.courseId, course.id)))
+      .limit(1);
+
+    if (mat) {
+      const parts: string[] = [];
+      if (mat.summary) parts.push(`Summary: ${mat.summary}`);
+      if (mat.topics?.length) parts.push(`Topics: ${mat.topics.join(', ')}`);
+      if (mat.keyPoints?.length) {
+        parts.push(`Key points:\n${mat.keyPoints.map((k) => `- ${k.point}`).join('\n')}`);
+      }
+      if (mat.definitions?.length) {
+        parts.push(`Definitions:\n${mat.definitions.map((d) => `- ${d.term}: ${d.definition}`).join('\n')}`);
+      }
+      if (mat.potentialQuestions?.length) {
+        parts.push(`Potential questions:\n${mat.potentialQuestions.map((q) => `- ${q}`).join('\n')}`);
+      }
+      context = parts.join('\n\n');
+
+      // Use first topic from material if none specified
+      if (!topic && mat.topics?.length) topic = mat.topics[0];
+      else if (!topic) topic = mat.title;
+    }
+  }
+
+  const params = {
+    courseCode: course.code,
+    courseTitle: course.title,
+    topic: topic || course.title,
+    masteryScore: 50,
+    context,
+  };
+
+  let prompt: string;
+  switch (input.postType) {
+    case 'quiz':
+      prompt = buildQuizPrompt({ ...params, difficulty: input.difficulty });
+      break;
+    case 'flashcard':
+      prompt = buildFlashcardPrompt(params);
+      break;
+    case 'poll':
+      prompt = buildPollPrompt(params);
+      break;
+    case 'thread':
+      prompt = buildThreadPrompt(params);
+      break;
+    default:
+      prompt = buildTextPostPrompt({ ...params, urgencyLevel: 0.3 });
+  }
+
+  const raw = await ai.generate({
+    messages: [{ role: 'user', content: prompt }],
+    systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
+    jsonMode: true,
+    maxTokens: 1000,
+  });
+
+  const draft = JSON.parse(raw);
+  return { draft, postType: input.postType, courseId: course.id };
+});
+
+// ─── Save AI-Generated Post ───────────────────────────────────────────────────
+
+const SaveAIPostInput = v.object({
+  courseId: v.string(),
+  postType: v.picklist(['text', 'quiz', 'flashcard', 'poll', 'thread']),
+  content: v.record(v.string(), v.unknown()),
+  topicTags: v.optional(v.array(v.string())),
+  communityId: v.optional(v.string()),
+});
+
+export const saveAIPost = command(SaveAIPostInput, async (input) => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
+  if (!userId) throw new Error('Not authenticated');
+
+  const [post] = await db
+    .insert(posts)
+    .values({
+      authorId: userId,
+      postType: input.postType as any,
+      content: input.content,
+      courseId: input.courseId,
+      communityId: input.communityId,
+      topicTags: input.topicTags ?? [],
+      aiGenerated: true,
+      isVisible: true,
+    })
+    .returning({ id: posts.id });
+
+  await db.insert(xpEvents).values({ userId, eventType: 'post_created', xpAwarded: 5, courseId: input.courseId });
+  await db.update(users).set({ xp: sql`${users.xp} + 5` }).where(eq(users.id, userId));
+
+  return { postId: post.id };
+});
 
 // ─── Course leaderboard ───────────────────────────────────────────────────────
 
