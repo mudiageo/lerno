@@ -32,7 +32,8 @@
 
   let addOpen = $state(false);
   let searchQuery = $state("");
-  let searchResults: any[] = $state([]);
+  const searchPromise = $derived(searchCourseCatalog({ query: searchQuery }));
+  let searchResults: any[] = $derived( !searchQuery.trim() ? [] : await searchPromise);
   let searching = $state(false);
   let enrolling: Record<string, boolean> = $state({});
 
@@ -65,7 +66,7 @@
     }
     searching = true;
     try {
-      searchResults = await searchCourseCatalog({ query: searchQuery });
+      searchResults = await searchCourseCatalog({ query: searchQuery }).refresh();
     } finally {
       searching = false;
     }
@@ -351,7 +352,6 @@
           class="pl-9"
           placeholder="e.g. CPE375 or Computer Architecture…"
           bind:value={searchQuery}
-          oninput={doSearch}
         />
       </div>
 

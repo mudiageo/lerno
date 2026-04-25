@@ -19,14 +19,14 @@
   import Plus from "@lucide/svelte/icons/plus";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
 
-  const courseCode = page.params.code;
-  let materials = await getCourseMaterials({ courseCode });
+  let materials = await getCourseMaterials({ courseCode: page.params.code });
 
   let uploadOpen = $state(false);
   let uploading = $state(false);
   let dragOver = $state(false);
+  
+  const { courseCode, title, file } = uploadCourseMaterial.fields
 
-  let form = $state({ title: "", type: "pdf" as string, file: null as File | null });
 
   const typeIcons: Record<string, any> = {
     pdf: FileText, slide: FileText, note: FileText,
@@ -47,53 +47,19 @@
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    form.file = file;
-    if (!form.title) form.title = file.name.replace(/\.[^/.]+$/, "");
-    // Detect type
-    if (file.type.includes("pdf")) form.type = "pdf";
-    else if (file.type.includes("image")) form.type = "image";
-    else if (file.type.includes("video")) form.type = "video";
-    else if (file.type.includes("audio")) form.type = "audio";
-    else if (file.name.match(/\.(ppt|pptx|key)$/i)) form.type = "slide";
-    else form.type = "other";
+    if (!title.value()) title.set(file.name.replace(/\.[^/.]+$/, ""));
   }
 
   function onDrop(e: DragEvent) {
     e.preventDefault();
     dragOver = false;
     const file = e.dataTransfer?.files?.[0];
-    if (file) { form.file = file; if (!form.title) form.title = file.name; }
+    if (!file) return;
+    uploadCourseMaterial.fields.file.set(file); 
+    if (!title.value()) title.set(file.name.replace(/\.[^/.]+$/, "")); 
   }
 
-  async function handleUpload() {
-    if (!form.file || !form.title) { toast.error("Select a file and add a title"); return; }
-    uploading = true;
-    try {
-      const { uploadUrl } = await uploadCourseMaterial({
-        courseCode,
-        title: form.title,
-        type: form.type,
-        filename: form.file.name,
-        contentType: form.file.type || "application/octet-stream",
-      });
-
-      // Upload directly to storage
-      await fetch(uploadUrl, {
-        method: "PUT",
-        body: form.file,
-        headers: { "Content-Type": form.file.type || "application/octet-stream" },
-      });
-
-      toast.success("Uploaded successfully");
-      materials = await getCourseMaterials({ courseCode });
-      uploadOpen = false;
-      form = { title: "", type: "pdf", file: null };
-    } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
-    } finally {
-      uploading = false;
-    }
-  }
+  
 
   function formatSize(bytes: number) {
     if (!bytes) return "";
@@ -206,6 +172,36 @@
         Upload Material
       </Dialog.Title>
     </Dialog.Header>
+    
+    <form {...uploadCourseMaterial.enhance(async ({ form, data, submit }) => {
+    
+    if (!data.file || !data.title) { toast.error("Select a file and add a title"); return; }
+        
+    uploading = true;
+    try {
+      
+      if (await submit()) {
+			  form.reset();
+
+  			toast.success("Uploaded successfully");
+        
+        uploadOpen = false;
+        
+  		} else {
+  			toast.error('Invalid form data!');
+  			console.log(uploadCourseMaterial.fields.allIssues())
+  		}
+
+      
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      uploading = false;
+    }
+  
+	
+})} enctype="multipart/form-data">
+      
 
     <div class="space-y-4">
       <!-- Drop zone -->
@@ -220,9 +216,9 @@
         tabindex="0"
         onkeydown={(e) => e.key === 'Enter' && document.getElementById("file-input")?.click()}
       >
-        {#if form.file}
-          <p class="text-sm font-medium text-foreground">{form.file.name}</p>
-          <p class="text-xs text-muted-foreground">{formatSize(form.file.size)}</p>
+        {#if file.value()}
+          <p class="text-sm font-medium text-foreground">{file.value().name}</p>
+          <p class="text-xs text-muted-foreground">{formatSize(file.value().size)}</p>
         {:else}
           <Upload class="size-8 text-muted-foreground/40 mx-auto mb-2" />
           <p class="text-sm text-muted-foreground">Click or drag file here</p>
@@ -230,7 +226,7 @@
         {/if}
         <input
           id="file-input"
-          type="file"
+          {...file.as("file")}
           class="hidden"
           accept=".pdf,.pptx,.ppt,.docx,.doc,.png,.jpg,.jpeg,.mp4,.mp3,.wav"
           onchange={onFileInput}
@@ -239,10 +235,12 @@
 
       <div class="space-y-1.5">
         <Label>Title</Label>
-        <Input placeholder="e.g. Week 3 Lecture Notes" bind:value={form.title} />
+        <Input placeholder="e.g. Week 3 Lecture Notes" {...title.as("text")} />
       </div>
+      <input {...courseCode.as("hidden", page.params.code)}>
+      
 
-      <Button class="w-full gap-2" disabled={uploading || !form.file} onclick={handleUpload}>
+      <Button type="submit" class="w-full gap-2" disabled={uploading || !file.value()}>
         {#if uploading}
           <div class="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
           Uploading…
@@ -252,5 +250,6 @@
         {/if}
       </Button>
     </div>
+    </form>
   </Dialog.Content>
 </Dialog.Root>

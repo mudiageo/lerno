@@ -130,7 +130,7 @@
 
   <!-- Page content -->
   <div class="flex-1">
-    <svelte:boundary>
+    <svelte:boundary onerror={e => console.log(e)}>
       {@render children()}
 
       {#snippet pending()}
@@ -140,7 +140,7 @@
       {/snippet}
 
       {#snippet failed(error, reset)}
-        <div class="flex flex-col items-center gap-3 py-16 text-center">
+        <div class="flex flex-col items-center gap-3 py-16 text-center">{error}
           <p class="text-sm text-muted-foreground">Something went wrong.</p>
           <Button variant="ghost" size="sm" onclick={reset}>Retry</Button>
         </div>

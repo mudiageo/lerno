@@ -1,4 +1,4 @@
-import { query, command, getRequestEvent } from '$app/server';
+import { query, command, form, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import {
   userCourses, courseSchedule, courseMaterials,
@@ -457,15 +457,13 @@ export const getCourseMaterials = query(
   },
 );
 
-export const uploadCourseMaterial = command(
+export const uploadCourseMaterial = form(
   v.object({
     courseCode: v.string(),
     title: v.string(),
-    type: v.picklist(['pdf', 'slide', 'note', 'image', 'video', 'audio', 'other']),
-    filename: v.string(),
-    contentType: v.string(),
+    file: v.file(),
   }),
-  async ({ courseCode, title, type, filename, contentType }) => {
+  async ({ courseCode, title, file }) => {
     const event = getRequestEvent();
     const userId = event.locals?.user?.id;
     if (!userId) throw new Error('Not authenticated');
@@ -478,7 +476,17 @@ export const uploadCourseMaterial = command(
 
     if (!course) throw new Error('Course not found');
 
-    const storageKey = `materials/${userId}/${courseCode}/${Date.now()}-${filename}`;
+    const storageKey = `materials/${userId}/${courseCode}/${Date.now()}-${file.name}`;
+    
+    
+    // Detect type
+    const type: 'pdf' | 'slide' | 'note' | 'image' | 'video' | 'audio' | 'other' =
+      file.type.includes("pdf")? "pdf" :
+      file.type.includes("image")? "image" :
+      file.type.includes("video")? "video" :
+      file.type.includes("audio")? "audio" :
+      /\.(ppt|pptx|key)$/i.test(file.name)? "slide" : "other";
+
 
     const [material] = await db
       .insert(courseMaterials)
@@ -491,8 +499,12 @@ export const uploadCourseMaterial = command(
         processed: false,
       })
       .returning();
-
-    const uploadUrl = await storage.presignedPutUrl(storageKey, { expiresIn: 3600, contentType });
+      
+    const contentType = file.type || "application/octet-stream"
+console.log(file)
+    const uploadUrl =  await storage.upload(storageKey, file.stream(), contentType)
+    
+    await getCourseMaterials({ courseCode }).refresh();
 
     return {
       materialId: material.id,
