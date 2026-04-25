@@ -534,6 +534,8 @@ export const uploadCourseMaterial = form(
 
 // ─── AI material enrichment (runs async after upload) ─────────────────────────
 
+const MAX_EXTRACTED_TEXT_LENGTH = 8000;
+
 async function enrichMaterialWithAI(params: {
   materialId: string;
   courseCode: string;
