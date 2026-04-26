@@ -71,6 +71,13 @@
       "when": 1745685164000,
       "tag": "0009_course_materials_ai",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1745750000000,
+      "tag": "0010_post_source_material",
+      "breakpoints": true
     }
   ]
 }

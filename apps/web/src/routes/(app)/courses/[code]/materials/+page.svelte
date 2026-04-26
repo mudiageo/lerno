@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { getCourseMaterials, uploadCourseMaterial, generateAIPost, saveAIPost } from "../../courses.remote";
+  import { getCourseMaterials, uploadCourseMaterial, generateAIPost, saveAIPost, getMaterialGeneratedPosts } from "../../courses.remote";
   import { Button } from "@lerno/ui/components/ui/button";
   import { Badge } from "@lerno/ui/components/ui/badge";
   import { Skeleton } from "@lerno/ui/components/ui/skeleton";
@@ -21,6 +21,9 @@
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
   import Send from "@lucide/svelte/icons/send";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import BookOpen from "@lucide/svelte/icons/book-open";
+  import Clapperboard from "@lucide/svelte/icons/clapperboard";
+  import Video from "@lucide/svelte/icons/video";
 
   let materials = await getCourseMaterials({ courseCode: page.params.code });
 
@@ -31,13 +34,14 @@
   // AI Generate Post dialog state
   let generateOpen = $state(false);
   let selectedMaterialId = $state<string | null>(null);
-  let selectedPostType = $state<'text' | 'quiz' | 'flashcard' | 'poll' | 'thread'>('quiz');
+  let selectedPostType = $state<'text' | 'quiz' | 'flashcard' | 'poll' | 'thread' | 'short' | 'video'>('quiz');
   let customTopic = $state('');
   let generating = $state(false);
   let saving = $state(false);
   let draft = $state<any>(null);
   let draftPostType = $state<string>('');
   let draftCourseId = $state<string>('');
+  let draftMaterialId = $state<string | null>(null);
 
   // Per-material expanded AI info
   let expandedMaterials = $state<Set<string>>(new Set());
@@ -65,6 +69,18 @@
     flashcard: "Flashcard",
     poll: "Poll",
     thread: "Thread",
+    short: "Short (Video Card)",
+    video: "Video Concept",
+  };
+
+  const postTypeIcons: Record<string, any> = {
+    text: BookOpen,
+    quiz: Brain,
+    flashcard: Brain,
+    poll: Brain,
+    thread: BookOpen,
+    short: Clapperboard,
+    video: Video,
   };
 
   function onFileInput(e: Event) {
@@ -125,6 +141,7 @@
       draft = result.draft;
       draftPostType = result.postType;
       draftCourseId = result.courseId;
+      draftMaterialId = result.materialId;
     } catch (e: any) {
       toast.error(e.message ?? "Generation failed");
     } finally {
@@ -153,6 +170,10 @@
         };
       } else if (draftPostType === 'thread') {
         content = { posts: draft.posts };
+      } else if (draftPostType === 'short') {
+        content = { front: draft.front, back: draft.back, hint: draft.hint ?? null };
+      } else if (draftPostType === 'video') {
+        content = { title: draft.title, description: draft.description, script: draft.script ?? [] };
       } else {
         content = { body: draft.body };
       }
@@ -162,11 +183,13 @@
         postType: draftPostType as any,
         content,
         topicTags: draft.topicTags ?? [],
+        materialId: draftMaterialId ?? undefined,
       });
 
       toast.success("Post created! 🎉");
       generateOpen = false;
       draft = null;
+      draftMaterialId = null;
     } catch (e: any) {
       toast.error(e.message ?? "Failed to save post");
     } finally {
@@ -333,6 +356,54 @@
                   </ul>
                 </div>
               {/if}
+
+              <!-- Generated content from this material -->
+              <svelte:boundary>
+                {@const materialPosts = await getMaterialGeneratedPosts({ materialId: material.id })}
+                {#if materialPosts.length > 0}
+                  <div>
+                    <p class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1">
+                      <Sparkles class="size-3 text-brand-500" />
+                      Generated Content ({materialPosts.length})
+                    </p>
+                    <div class="space-y-1.5">
+                      {#each materialPosts as mp (mp.id)}
+                        {@const TypeIcon = postTypeIcons[mp.postType] ?? BookOpen}
+                        <div class="flex items-start gap-2 p-2 rounded-lg bg-background border border-border/60 text-xs">
+                          <div class="size-6 rounded-md bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center shrink-0 mt-0.5">
+                            <TypeIcon class="size-3.5 text-brand-500" />
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 mb-0.5">
+                              <Badge variant="outline" class="text-[9px] h-3.5 px-1">{mp.postType}</Badge>
+                              <span class="text-muted-foreground text-[10px]">{timeAgo(mp.createdAt)}</span>
+                            </div>
+                            {#if mp.postType === 'quiz'}
+                              <p class="text-foreground truncate">{(mp.content as any).question ?? ''}</p>
+                            {:else if mp.postType === 'flashcard' || mp.postType === 'short'}
+                              <p class="text-foreground truncate">{(mp.content as any).front ?? ''}</p>
+                            {:else if mp.postType === 'poll'}
+                              <p class="text-foreground truncate">{(mp.content as any).question ?? ''}</p>
+                            {:else if mp.postType === 'video'}
+                              <p class="text-foreground truncate">{(mp.content as any).title ?? ''}</p>
+                            {:else}
+                              <p class="text-foreground truncate">{(mp.content as any).body ?? ''}</p>
+                            {/if}
+                          </div>
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+
+                {#snippet pending()}
+                  <div class="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <div class="size-3 rounded-full border border-muted-foreground/30 border-t-brand-500 animate-spin"></div>
+                    Loading generated content...
+                  </div>
+                {/snippet}
+              </svelte:boundary>
+
               <Button size="sm" variant="outline" class="h-7 text-xs gap-1.5 w-full" onclick={() => openGenerateDialog(material.id)}>
                 <Sparkles class="size-3" />
                 Generate study content from this material
@@ -437,7 +508,7 @@
         AI Content Generator
       </Dialog.Title>
       <Dialog.Description class="text-xs">
-        Generate quiz questions, flashcards, polls and more from your course materials.
+        Generate quiz questions, flashcards, polls, shorts and more from your course materials.
       </Dialog.Description>
     </Dialog.Header>
 
@@ -458,6 +529,13 @@
               </button>
             {/each}
           </div>
+          {#if selectedPostType === 'short'}
+            <p class="text-[11px] text-muted-foreground flex items-center gap-1"><Clapperboard class="size-3" /> Saved to the Shorts section of this course</p>
+          {:else if selectedPostType === 'video'}
+            <p class="text-[11px] text-muted-foreground flex items-center gap-1"><Video class="size-3" /> Saved to the Videos section of this course</p>
+          {:else}
+            <p class="text-[11px] text-muted-foreground flex items-center gap-1"><BookOpen class="size-3" /> Also appears in the course feed</p>
+          {/if}
         </div>
 
         {#if materials.filter((m) => m.processed).length > 0}
@@ -546,6 +624,38 @@
                 <p class="text-xs">{post.body}</p>
               </div>
             {/each}
+          {:else if draftPostType === 'short'}
+            <div class="space-y-2">
+              <div class="p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-700/40">
+                <p class="text-[10px] text-indigo-300 uppercase tracking-wide mb-1 flex items-center gap-1"><Clapperboard class="size-3" /> Short Front</p>
+                <p class="text-sm font-bold text-white">{draft.front}</p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-indigo-950/20 border border-indigo-700/30">
+                <p class="text-[10px] text-indigo-300 uppercase tracking-wide mb-1">Answer</p>
+                <p class="text-sm text-white/90">{draft.back}</p>
+              </div>
+            </div>
+          {:else if draftPostType === 'video'}
+            <div class="space-y-2">
+              <div class="p-2.5 rounded-lg bg-background border border-border">
+                <p class="text-[10px] text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1"><Video class="size-3" /> Video Title</p>
+                <p class="text-sm font-bold">{draft.title}</p>
+              </div>
+              {#if draft.description}
+                <p class="text-xs text-muted-foreground italic">{draft.description}</p>
+              {/if}
+              {#if draft.script?.length}
+                <div class="space-y-1">
+                  <p class="text-[10px] text-muted-foreground uppercase tracking-wide">Script outline</p>
+                  {#each draft.script as point, i (i)}
+                    <div class="flex gap-2 text-xs">
+                      <span class="text-brand-500 shrink-0">{i + 1}.</span>
+                      <span>{point}</span>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
           {:else}
             <p class="text-sm">{draft.body}</p>
           {/if}

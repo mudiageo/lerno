@@ -371,3 +371,52 @@ Return ONLY valid JSON:
 `;
 }
 
+
+export function buildShortPrompt(params: {
+  courseCode: string;
+  courseTitle: string;
+  topic: string;
+  context?: string;
+}) {
+  return `
+Generate a short-form learning card (like a TikTok flashcard) for ${params.courseCode}: ${params.courseTitle}.
+
+Topic: ${params.topic}
+${params.context ? `\nContext:\n${params.context}` : ''}
+
+The card should have a punchy front (question or key concept, max 80 chars) and a concise back (answer or explanation, max 120 chars).
+Make it visually compelling — use a hook or surprising fact if possible.
+
+Return JSON:
+{
+  "front": "Question or key concept (max 80 characters)",
+  "back": "Answer or explanation (max 120 characters)",
+  "hint": "Optional hint (max 40 chars, or null)",
+  "topicTags": ["tag1", "tag2"]
+}
+`;
+}
+
+export function buildVideoScriptPrompt(params: {
+  courseCode: string;
+  courseTitle: string;
+  topic: string;
+  context?: string;
+}) {
+  return `
+Generate a short educational video concept for ${params.courseCode}: ${params.courseTitle}.
+
+Topic: ${params.topic}
+${params.context ? `\nContext:\n${params.context}` : ''}
+
+Create a concise video card: a compelling title, a 1-2 sentence description that would appear on the thumbnail, and 3-5 bullet points as the video script outline.
+
+Return JSON:
+{
+  "title": "Engaging video title (max 60 characters)",
+  "description": "1-2 sentence hook/description (max 200 characters)",
+  "script": ["Point 1 (max 80 chars)", "Point 2", "Point 3"],
+  "topicTags": ["tag1", "tag2"]
+}
+`;
+}

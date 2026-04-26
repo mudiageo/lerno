@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, boolean, timestamp, integer, jsonb, pgEnum, index, customType } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { users } from './users';
-import { userCourses } from './courses';
+import { userCourses, courseMaterials } from './courses';
 import { communities } from './communities';
 
 export const postTypeEnum = pgEnum('post_type', [
@@ -20,6 +20,7 @@ export const posts = pgTable('posts', {
   authorId:         uuid('author_id').references(() => users.id, { onDelete: 'set null' }),
   courseId:         uuid('course_id').references(() => userCourses.id, { onDelete: 'set null' }),
   communityId:      uuid('community_id').references(() => communities.id, { onDelete: 'set null' }),
+  sourceMaterialId: uuid('source_material_id').references(() => courseMaterials.id, { onDelete: 'set null' }),
   parentId:         uuid('parent_id'),
   repostOfId:       uuid('repost_of_id'),
   quoteOfId:        uuid('quote_of_id'),

@@ -13,6 +13,7 @@ import {
   youtubeCache,
 } from '@lerno/db/schema';
 import { eq, and, desc, sql, asc, gte, lt, ilike, or, count } from '@lerno/db/drizzle';
+import { getFeed } from '../feed/feed.remote';
 import * as v from 'valibot';
 import { storage } from '@lerno/storage';
 import {
@@ -25,6 +26,8 @@ import {
   buildTextPostPrompt,
   buildPollPrompt,
   buildThreadPrompt,
+  buildShortPrompt,
+  buildVideoScriptPrompt,
 } from '@lerno/ai';
 
 // ─── My Courses (dashboard) ───────────────────────────────────────────────────
@@ -632,7 +635,7 @@ async function enrichMaterialWithAI(params: {
 
 const GenerateAIPostInput = v.object({
   courseCode: v.string(),
-  postType: v.picklist(['text', 'quiz', 'flashcard', 'poll', 'thread']),
+  postType: v.picklist(['text', 'quiz', 'flashcard', 'poll', 'thread', 'short', 'video']),
   topic: v.optional(v.string()),
   materialId: v.optional(v.string()),
   difficulty: v.optional(v.picklist(['easy', 'medium', 'hard'])),
@@ -717,6 +720,12 @@ export const generateAIPost = command(GenerateAIPostInput, async (input) => {
     case 'thread':
       prompt = buildThreadPrompt(params);
       break;
+    case 'short':
+      prompt = buildShortPrompt(params);
+      break;
+    case 'video':
+      prompt = buildVideoScriptPrompt(params);
+      break;
     default:
       prompt = buildTextPostPrompt({ ...params, urgencyLevel: 0.3 });
   }
@@ -729,17 +738,18 @@ export const generateAIPost = command(GenerateAIPostInput, async (input) => {
   });
 
   const draft = JSON.parse(raw);
-  return { draft, postType: input.postType, courseId: course.id };
+  return { draft, postType: input.postType, courseId: course.id, materialId: input.materialId ?? null };
 });
 
 // ─── Save AI-Generated Post ───────────────────────────────────────────────────
 
 const SaveAIPostInput = v.object({
   courseId: v.string(),
-  postType: v.picklist(['text', 'quiz', 'flashcard', 'poll', 'thread']),
+  postType: v.picklist(['text', 'quiz', 'flashcard', 'poll', 'thread', 'short', 'video']),
   content: v.record(v.string(), v.unknown()),
   topicTags: v.optional(v.array(v.string())),
   communityId: v.optional(v.string()),
+  materialId: v.optional(v.string()),
 });
 
 export const saveAIPost = command(SaveAIPostInput, async (input) => {
@@ -755,6 +765,7 @@ export const saveAIPost = command(SaveAIPostInput, async (input) => {
       content: input.content,
       courseId: input.courseId,
       communityId: input.communityId,
+      sourceMaterialId: input.materialId ?? null,
       topicTags: input.topicTags ?? [],
       aiGenerated: true,
       isVisible: true,
@@ -769,8 +780,46 @@ export const saveAIPost = command(SaveAIPostInput, async (input) => {
     .set({ xp: sql`${users.xp} + 5` })
     .where(eq(users.id, userId));
 
+  // Invalidate feed cache so new post appears immediately
+  await getFeed({}).refresh();
+
+  // If saved from a material, also refresh the material posts query
+  if (input.materialId) {
+    await getMaterialGeneratedPosts({ materialId: input.materialId }).refresh();
+  }
+
   return { postId: post.id };
 });
+
+// ─── Material generated posts ─────────────────────────────────────────────────
+
+export const getMaterialGeneratedPosts = query(
+  v.object({ materialId: v.string() }),
+  async ({ materialId }) => {
+    const rows = await db
+      .select({
+        id: posts.id,
+        postType: posts.postType,
+        content: posts.content,
+        topicTags: posts.topicTags,
+        likeCount: posts.likeCount,
+        createdAt: posts.createdAt,
+        authorName: users.displayName,
+        authorUsername: users.username,
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.authorId, users.id))
+      .where(and(eq(posts.sourceMaterialId, materialId), eq(posts.isVisible, true)))
+      .orderBy(desc(posts.createdAt))
+      .limit(20);
+
+    return rows.map((r) => ({
+      ...r,
+      author: { name: r.authorName, username: r.authorUsername },
+      createdAt: r.createdAt?.toISOString() ?? new Date().toISOString(),
+    }));
+  },
+);
 
 // ─── Course leaderboard ───────────────────────────────────────────────────────
 
