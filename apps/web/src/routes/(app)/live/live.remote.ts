@@ -17,7 +17,7 @@ try {
   const lk = await import('livekit-server-sdk');
   AccessToken = lk.AccessToken;
 } catch (e) {
-  console.warn("LiveKit Server SDK not fully loaded. Falling back to mock.");
+  console.warn('LiveKit Server SDK not fully loaded. Falling back to mock.');
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -80,16 +80,19 @@ export const startLiveStream = command(StartStreamInput, async (input) => {
   const roomId = crypto.randomUUID();
 
   // Update or insert stream in DB
-  const [stream] = await db.insert(streams).values({
-    hostId: userId,
-    title: input.title,
-    description: input.description,
-    courseId: input.courseId,
-    roomId,
-    status: 'live',
-    provider: 'livekit',
-    startedAt: new Date(),
-  }).returning({ id: streams.id });
+  const [stream] = await db
+    .insert(streams)
+    .values({
+      hostId: userId,
+      title: input.title,
+      description: input.description,
+      courseId: input.courseId,
+      roomId,
+      status: 'live',
+      provider: 'livekit',
+      startedAt: new Date(),
+    })
+    .returning({ id: streams.id });
 
   // Generate LiveKit Host token
   let token = 'mock_host_token';
@@ -113,7 +116,11 @@ export const joinLiveStream = command(JoinStreamInput, async ({ streamId }) => {
   const username = event.locals?.user?.email?.split('@')[0] ?? 'Viewer';
   if (!userId) throw new Error('Not authenticated');
 
-  const [stream] = await db.select({ roomId: streams.roomId }).from(streams).where(eq(streams.id, streamId)).limit(1);
+  const [stream] = await db
+    .select({ roomId: streams.roomId })
+    .from(streams)
+    .where(eq(streams.id, streamId))
+    .limit(1);
   if (!stream) throw new Error('Stream not found');
 
   let token = 'mock_viewer_token';
@@ -135,10 +142,17 @@ export const endLiveStream = command(v.object({ streamId: v.string() }), async (
   if (!userId) throw new Error('Not authenticated');
 
   // Verify host
-  const [stream] = await db.select({ hostId: streams.hostId }).from(streams).where(eq(streams.id, streamId)).limit(1);
+  const [stream] = await db
+    .select({ hostId: streams.hostId })
+    .from(streams)
+    .where(eq(streams.id, streamId))
+    .limit(1);
   if (stream?.hostId !== userId) throw new Error('Not authorized');
 
-  await db.update(streams).set({ status: 'ended', endedAt: new Date() }).where(eq(streams.id, streamId));
+  await db
+    .update(streams)
+    .set({ status: 'ended', endedAt: new Date() })
+    .where(eq(streams.id, streamId));
 
   return { success: true };
 });

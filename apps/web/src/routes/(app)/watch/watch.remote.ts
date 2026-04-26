@@ -93,7 +93,7 @@ export const uploadVideo = form(
     }
 
     if (!finalUrl) {
-      throw new Error("You must provide either a URL or upload a video file.");
+      throw new Error('You must provide either a URL or upload a video file.');
     }
 
     const [post] = await (db as any)

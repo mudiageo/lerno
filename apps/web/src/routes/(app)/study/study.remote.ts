@@ -19,7 +19,7 @@ export const getStudyDeck = query(
         and(
           eq(topicMastery.userId as any, userId),
           courseId ? eq(topicMastery.courseId as any, courseId) : undefined,
-          or(lte(topicMastery.fsrsDue as any, now), isNull(topicMastery.fsrsDue as any)),
+          or(lte(topicMastery.fsrsDue as any, now), isNull(topicMastery.fsrsDue as any))
         )
       )
       .limit(30);
@@ -41,7 +41,7 @@ export const getStudyDeck = query(
         and(
           eq(posts.postType as any, 'flashcard'),
           eq(posts.isVisible as any, true),
-          courseId ? eq(posts.courseId as any, courseId) : undefined,
+          courseId ? eq(posts.courseId as any, courseId) : undefined
         )
       )
       .orderBy(sql`RANDOM()`)
@@ -77,7 +77,7 @@ export const getQuizSession = query(
         and(
           eq(posts.postType as any, 'quiz'),
           eq(posts.isVisible as any, true),
-          courseId ? eq(posts.courseId as any, courseId) : undefined,
+          courseId ? eq(posts.courseId as any, courseId) : undefined
         )
       )
       .orderBy(sql`RANDOM()`)

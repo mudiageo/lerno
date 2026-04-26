@@ -1,4 +1,4 @@
-import adapter from "@sveltejs/adapter-auto";
+import adapter from '@sveltejs/adapter-auto';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -8,17 +8,17 @@ const config = {
     // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter: adapter(),
     experimental: {
-      remoteFunctions: true
-    }
+      remoteFunctions: true,
+    },
   },
   compilerOptions: {
     experimental: {
-      async: true
-    }
+      async: true,
+    },
   },
   vitePlugin: {
     dynamicCompileOptions: ({ filename }) =>
-      filename.includes("node_modules") ? undefined : { runes: true },
+      filename.includes('node_modules') ? undefined : { runes: true },
   },
 };
 

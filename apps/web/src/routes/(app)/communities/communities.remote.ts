@@ -34,11 +34,11 @@ export const getCommunities = query(
           courseCode ? eq(communities.courseCode, courseCode) : undefined,
           search
             ? or(
-              ilike(communities.name, `%${search}%`),
-              ilike(communities.description, `%${search}%`),
-            )
-            : undefined,
-        ),
+                ilike(communities.name, `%${search}%`),
+                ilike(communities.description, `%${search}%`)
+              )
+            : undefined
+        )
       )
       .orderBy(desc(communities.memberCount))
       .limit(60);
@@ -60,18 +60,14 @@ export const getCommunities = query(
     if (filter === 'joined') return withJoined.filter((c) => c.joined);
     if (filter === 'discover') return withJoined.filter((c) => !c.joined);
     return withJoined;
-  },
+  }
 );
 
 export const getCommunity = query(v.object({ slug: v.string() }), async ({ slug }) => {
   const event = getRequestEvent();
   const userId = event.locals?.user?.id;
 
-  const [row] = await db
-    .select()
-    .from(communities)
-    .where(eq(communities.slug, slug))
-    .limit(1);
+  const [row] = await db.select().from(communities).where(eq(communities.slug, slug)).limit(1);
 
   if (!row) throw new Error('Community not found');
 
@@ -80,9 +76,7 @@ export const getCommunity = query(v.object({ slug: v.string() }), async ({ slug 
     const [membership] = await db
       .select({ communityId: communityMembers.communityId })
       .from(communityMembers)
-      .where(
-        and(eq(communityMembers.communityId, row.id), eq(communityMembers.userId, userId)),
-      )
+      .where(and(eq(communityMembers.communityId, row.id), eq(communityMembers.userId, userId)))
       .limit(1);
     joined = !!membership;
   }
@@ -122,8 +116,8 @@ export const getCommunityPosts = query(
         and(
           eq(posts.communityId, communityId),
           eq(posts.isVisible, true),
-          cursor ? sql`${posts.createdAt} < ${new Date(cursor)}` : undefined,
-        ),
+          cursor ? sql`${posts.createdAt} < ${new Date(cursor)}` : undefined
+        )
       )
       .orderBy(desc(posts.createdAt))
       .limit(20);
@@ -132,7 +126,7 @@ export const getCommunityPosts = query(
       ...p,
       createdAt: p.createdAt?.toISOString() ?? new Date().toISOString(),
     }));
-  },
+  }
 );
 
 export const createCommunity = command(
@@ -174,7 +168,7 @@ export const createCommunity = command(
     });
 
     return { id: community.id, slug: community.slug };
-  },
+  }
 );
 
 export const joinCommunity = command(
@@ -193,7 +187,7 @@ export const joinCommunity = command(
       .update(communities)
       .set({ memberCount: sql`${communities.memberCount} + 1` })
       .where(eq(communities.id, communityId));
-  },
+  }
 );
 
 export const leaveCommunity = command(
@@ -206,13 +200,12 @@ export const leaveCommunity = command(
     await db
       .delete(communityMembers)
       .where(
-        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)),
+        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId))
       );
 
     await db
       .update(communities)
       .set({ memberCount: sql`GREATEST(0, ${communities.memberCount} - 1)` })
       .where(eq(communities.id, communityId));
-  },
+  }
 );
-

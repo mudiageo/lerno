@@ -3,13 +3,11 @@ import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { building } from '$app/environment';
-import { getRequestEvent } from "$app/server"; // or from event
+import { getRequestEvent } from '$app/server'; // or from event
 
 export const auth = getAuth(getRequestEvent);
 
-
 const betterAuthHandle: Handle = async ({ event, resolve }) => {
-
   return svelteKitHandler({ event, resolve, auth, building });
 };
 

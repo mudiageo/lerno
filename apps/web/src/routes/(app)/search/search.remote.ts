@@ -33,7 +33,11 @@ export const searchAll = query(SearchInput, async ({ q, tab = 'posts' }) => {
       .orderBy(desc(posts.createdAt as any))
       .limit(20);
 
-    return { posts: rows.map((p: any) => ({ ...p, createdAt: p.createdAt?.toISOString() ?? '' })), people: [], communities: [] };
+    return {
+      posts: rows.map((p: any) => ({ ...p, createdAt: p.createdAt?.toISOString() ?? '' })),
+      people: [],
+      communities: [],
+    };
   }
 
   if (tab === 'people') {
@@ -48,10 +52,7 @@ export const searchAll = query(SearchInput, async ({ q, tab = 'posts' }) => {
       })
       .from(users)
       .where(
-        or(
-          ilike(users.username as any, `%${term}%`),
-          ilike(users.displayName as any, `%${term}%`),
-        )
+        or(ilike(users.username as any, `%${term}%`), ilike(users.displayName as any, `%${term}%`))
       )
       .orderBy(desc(users.xp as any))
       .limit(20);
@@ -74,7 +75,7 @@ export const searchAll = query(SearchInput, async ({ q, tab = 'posts' }) => {
       .where(
         or(
           ilike(communities.name as any, `%${term}%`),
-          ilike(communities.description as any, `%${term}%`),
+          ilike(communities.description as any, `%${term}%`)
         )
       )
       .orderBy(desc(communities.memberCount as any))

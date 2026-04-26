@@ -1,8 +1,17 @@
 import { query, getRequestEvent, command } from '$app/server';
 import { db } from '@lerno/db';
 import {
-  posts, users, userCourses, interactions, xpEvents, topicMastery,
-  mutes, mutedPosts, blocks, reports, notInterested,
+  posts,
+  users,
+  userCourses,
+  interactions,
+  xpEvents,
+  topicMastery,
+  mutes,
+  mutedPosts,
+  blocks,
+  reports,
+  notInterested,
 } from '@lerno/db/schema';
 import { desc, eq, inArray, and, sql, lt, not, isNull } from '@lerno/db/drizzle';
 import * as v from 'valibot';
@@ -10,11 +19,11 @@ import * as v from 'valibot';
 // ─── Feed ─────────────────────────────────────────────────────────────────────
 
 const FeedInput = v.object({
-  cursor: v.optional(v.string()),      // last post createdAt ISO string
+  cursor: v.optional(v.string()), // last post createdAt ISO string
   limit: v.optional(v.number()),
   communityId: v.optional(v.string()), // filter by community
-  postType: v.optional(v.string()),    // 'short', 'quiz', 'video', etc.
-  courseCode: v.optional(v.string()),  // filter by course code
+  postType: v.optional(v.string()), // 'short', 'quiz', 'video', etc.
+  courseCode: v.optional(v.string()), // filter by course code
 });
 
 export const getPostById = query(v.object({ postId: v.string() }), async ({ postId }) => {
@@ -85,9 +94,7 @@ export const getFeed = query(FeedInput, async (input) => {
   const limit = input.limit ?? 20;
 
   // Build cursor condition for pagination
-  const cursorCondition = input.cursor
-    ? lt(posts.createdAt, new Date(input.cursor))
-    : undefined;
+  const cursorCondition = input.cursor ? lt(posts.createdAt, new Date(input.cursor)) : undefined;
 
   // Collect IDs to exclude for logged-in users (muted users, blocked users, muted posts)
   let excludeUserIds: string[] = [];
@@ -97,16 +104,19 @@ export const getFeed = query(FeedInput, async (input) => {
     const [mutedUsers, blockedUsers, mutedPostRows, notInterestedRows] = await Promise.all([
       db.select({ mutedId: mutes.mutedId }).from(mutes).where(eq(mutes.muterId, userId)),
       db.select({ blockedId: blocks.blockedId }).from(blocks).where(eq(blocks.blockerId, userId)),
-      db.select({ postId: mutedPosts.postId }).from(mutedPosts).where(eq(mutedPosts.userId, userId)),
-      db.select({ postId: notInterested.postId }).from(notInterested).where(eq(notInterested.userId, userId)),
+      db
+        .select({ postId: mutedPosts.postId })
+        .from(mutedPosts)
+        .where(eq(mutedPosts.userId, userId)),
+      db
+        .select({ postId: notInterested.postId })
+        .from(notInterested)
+        .where(eq(notInterested.userId, userId)),
     ]);
-    excludeUserIds = [
-      ...mutedUsers.map((m) => m.mutedId),
-      ...blockedUsers.map((b) => b.blockedId),
-    ];
+    excludeUserIds = [...mutedUsers.map((m) => m.mutedId), ...blockedUsers.map((b) => b.blockedId)];
     excludePostIds = [
-      ...mutedPostRows.map((m) => m.postId).filter(Boolean) as string[],
-      ...notInterestedRows.map((n) => n.postId).filter(Boolean) as string[],
+      ...(mutedPostRows.map((m) => m.postId).filter(Boolean) as string[]),
+      ...(notInterestedRows.map((n) => n.postId).filter(Boolean) as string[]),
     ];
   }
 
@@ -116,12 +126,8 @@ export const getFeed = query(FeedInput, async (input) => {
     input.communityId ? eq(posts.communityId, input.communityId) : undefined,
     input.postType ? eq(posts.postType, input.postType as any) : undefined,
     input.courseCode ? eq(userCourses.code, input.courseCode) : undefined,
-    excludeUserIds.length > 0
-      ? not(inArray(posts.authorId, excludeUserIds))
-      : undefined,
-    excludePostIds.length > 0
-      ? not(inArray(posts.id, excludePostIds))
-      : undefined,
+    excludeUserIds.length > 0 ? not(inArray(posts.authorId, excludeUserIds)) : undefined,
+    excludePostIds.length > 0 ? not(inArray(posts.id, excludePostIds)) : undefined
   );
 
   const feedPosts = await db
@@ -166,12 +172,13 @@ export const getFeed = query(FeedInput, async (input) => {
         and(
           eq(interactions.userId, userId),
           inArray(interactions.type, ['like', 'bookmark']),
-          inArray(interactions.postId, postIds),
-        ),
+          inArray(interactions.postId, postIds)
+        )
       );
     for (const i of myInteractions) {
       if (!i.postId) continue;
-      if (!userInteractions[i.postId]) userInteractions[i.postId] = { liked: false, bookmarked: false };
+      if (!userInteractions[i.postId])
+        userInteractions[i.postId] = { liked: false, bookmarked: false };
       if (i.type === 'like') userInteractions[i.postId].liked = true;
       if (i.type === 'bookmark') userInteractions[i.postId].bookmarked = true;
     }
@@ -202,18 +209,38 @@ export const likePost = command(PostIdInput, async ({ postId }) => {
   const existing = await db
     .select({ id: interactions.id })
     .from(interactions)
-    .where(and(eq(interactions.userId, userId), eq(interactions.postId, postId), eq(interactions.type, 'like')))
+    .where(
+      and(
+        eq(interactions.userId, userId),
+        eq(interactions.postId, postId),
+        eq(interactions.type, 'like')
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) {
     // Unlike
-    await db.delete(interactions).where(and(eq(interactions.userId, userId), eq(interactions.postId, postId), eq(interactions.type, 'like')));
-    await db.update(posts).set({ likeCount: sql`${posts.likeCount} - 1` }).where(eq(posts.id, postId));
+    await db
+      .delete(interactions)
+      .where(
+        and(
+          eq(interactions.userId, userId),
+          eq(interactions.postId, postId),
+          eq(interactions.type, 'like')
+        )
+      );
+    await db
+      .update(posts)
+      .set({ likeCount: sql`${posts.likeCount} - 1` })
+      .where(eq(posts.id, postId));
     return { liked: false };
   } else {
     // Like
     await db.insert(interactions).values({ userId, postId, type: 'like' });
-    await db.update(posts).set({ likeCount: sql`${posts.likeCount} + 1` }).where(eq(posts.id, postId));
+    await db
+      .update(posts)
+      .set({ likeCount: sql`${posts.likeCount} + 1` })
+      .where(eq(posts.id, postId));
     return { liked: true };
   }
 });
@@ -226,11 +253,25 @@ export const bookmarkPost = command(PostIdInput, async ({ postId }) => {
   const existing = await db
     .select({ id: interactions.id })
     .from(interactions)
-    .where(and(eq(interactions.userId, userId), eq(interactions.postId, postId), eq(interactions.type, 'bookmark')))
+    .where(
+      and(
+        eq(interactions.userId, userId),
+        eq(interactions.postId, postId),
+        eq(interactions.type, 'bookmark')
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) {
-    await db.delete(interactions).where(and(eq(interactions.userId, userId), eq(interactions.postId, postId), eq(interactions.type, 'bookmark')));
+    await db
+      .delete(interactions)
+      .where(
+        and(
+          eq(interactions.userId, userId),
+          eq(interactions.postId, postId),
+          eq(interactions.type, 'bookmark')
+        )
+      );
     return { bookmarked: false };
   } else {
     await db.insert(interactions).values({ userId, postId, type: 'bookmark' });
@@ -253,11 +294,23 @@ export const repostPost = command(PostIdInput, async ({ postId }) => {
   if (existingRepost.length > 0) {
     // Undo repost
     await db.delete(posts).where(eq(posts.id, existingRepost[0].id));
-    await db.update(posts).set({ repostCount: sql`${posts.repostCount} - 1` }).where(eq(posts.id, postId));
+    await db
+      .update(posts)
+      .set({ repostCount: sql`${posts.repostCount} - 1` })
+      .where(eq(posts.id, postId));
     return { reposted: false };
   }
 
-  const [original] = await db.select({ postType: posts.postType, content: posts.content, courseId: posts.courseId, topicTags: posts.topicTags }).from(posts).where(eq(posts.id, postId)).limit(1);
+  const [original] = await db
+    .select({
+      postType: posts.postType,
+      content: posts.content,
+      courseId: posts.courseId,
+      topicTags: posts.topicTags,
+    })
+    .from(posts)
+    .where(eq(posts.id, postId))
+    .limit(1);
   if (!original) throw new Error('Post not found');
 
   await db.insert(posts).values({
@@ -269,7 +322,10 @@ export const repostPost = command(PostIdInput, async ({ postId }) => {
     repostOfId: postId,
     isVisible: true,
   });
-  await db.update(posts).set({ repostCount: sql`${posts.repostCount} + 1` }).where(eq(posts.id, postId));
+  await db
+    .update(posts)
+    .set({ repostCount: sql`${posts.repostCount} + 1` })
+    .where(eq(posts.id, postId));
   return { reposted: true };
 });
 
@@ -280,17 +336,26 @@ export const quotePost = command(QuotePostInput, async ({ postId, body }) => {
   const userId = event.locals?.user?.id;
   if (!userId) throw new Error('Not authenticated');
 
-  const [newPost] = await db.insert(posts).values({
-    authorId: userId,
-    postType: 'text',
-    content: { body },
-    quoteOfId: postId,
-    isVisible: true,
-  }).returning({ id: posts.id });
+  const [newPost] = await db
+    .insert(posts)
+    .values({
+      authorId: userId,
+      postType: 'text',
+      content: { body },
+      quoteOfId: postId,
+      isVisible: true,
+    })
+    .returning({ id: posts.id });
 
-  await db.update(posts).set({ repostCount: sql`${posts.repostCount} + 1` }).where(eq(posts.id, postId));
+  await db
+    .update(posts)
+    .set({ repostCount: sql`${posts.repostCount} + 1` })
+    .where(eq(posts.id, postId));
   await db.insert(xpEvents).values({ userId, eventType: 'post_created', xpAwarded: 5 });
-  await db.update(users).set({ xp: sql`${users.xp} + 5` }).where(eq(users.id, userId));
+  await db
+    .update(users)
+    .set({ xp: sql`${users.xp} + 5` })
+    .where(eq(users.id, userId));
 
   return { postId: newPost.id };
 });
@@ -301,12 +366,13 @@ export const recordImpression = command(PostIdInput, async ({ postId }) => {
   const event = getRequestEvent();
   const userId = event.locals?.user?.id;
 
-  await db.update(posts).set({ viewCount: sql`${posts.viewCount} + 1` }).where(eq(posts.id, postId));
+  await db
+    .update(posts)
+    .set({ viewCount: sql`${posts.viewCount} + 1` })
+    .where(eq(posts.id, postId));
 
   if (userId) {
-    await db.insert(interactions)
-      .values({ userId, postId, type: 'view' })
-      .onConflictDoNothing();
+    await db.insert(interactions).values({ userId, postId, type: 'view' }).onConflictDoNothing();
   }
 
   return { ok: true };
@@ -323,17 +389,26 @@ export const createComment = command(CreateCommentInput, async ({ postId, body }
 
   if (!body.trim() || body.length > 500) throw new Error('Invalid comment');
 
-  const [comment] = await db.insert(posts).values({
-    authorId: userId,
-    postType: 'text',
-    content: { body },
-    parentId: postId,
-    isVisible: true,
-  }).returning({ id: posts.id });
+  const [comment] = await db
+    .insert(posts)
+    .values({
+      authorId: userId,
+      postType: 'text',
+      content: { body },
+      parentId: postId,
+      isVisible: true,
+    })
+    .returning({ id: posts.id });
 
-  await db.update(posts).set({ replyCount: sql`${posts.replyCount} + 1` }).where(eq(posts.id, postId));
+  await db
+    .update(posts)
+    .set({ replyCount: sql`${posts.replyCount} + 1` })
+    .where(eq(posts.id, postId));
   await db.insert(xpEvents).values({ userId, eventType: 'post_created', xpAwarded: 2 });
-  await db.update(users).set({ xp: sql`${users.xp} + 2` }).where(eq(users.id, userId));
+  await db
+    .update(users)
+    .set({ xp: sql`${users.xp} + 2` })
+    .where(eq(users.id, userId));
 
   return { commentId: comment.id };
 });
@@ -382,7 +457,14 @@ export const getComments = query(GetCommentsInput, async ({ postId, cursor, limi
 
 const ReportPostInput = v.object({
   postId: v.string(),
-  reason: v.picklist(['spam', 'harassment', 'misinformation', 'inappropriate', 'plagiarism', 'other']),
+  reason: v.picklist([
+    'spam',
+    'harassment',
+    'misinformation',
+    'inappropriate',
+    'plagiarism',
+    'other',
+  ]),
   details: v.optional(v.string()),
 });
 
@@ -407,32 +489,44 @@ export const mutePost = command(PostIdInput, async ({ postId }) => {
   return { muted: true };
 });
 
-export const muteUser = command(v.object({ targetUserId: v.string() }), async ({ targetUserId }) => {
-  const event = getRequestEvent();
-  const userId = event.locals?.user?.id;
-  if (!userId) throw new Error('Not authenticated');
+export const muteUser = command(
+  v.object({ targetUserId: v.string() }),
+  async ({ targetUserId }) => {
+    const event = getRequestEvent();
+    const userId = event.locals?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-  await db.insert(mutes).values({ muterId: userId, mutedId: targetUserId }).onConflictDoNothing();
-  return { muted: true };
-});
+    await db.insert(mutes).values({ muterId: userId, mutedId: targetUserId }).onConflictDoNothing();
+    return { muted: true };
+  }
+);
 
-export const unmuteUser = command(v.object({ targetUserId: v.string() }), async ({ targetUserId }) => {
-  const event = getRequestEvent();
-  const userId = event.locals?.user?.id;
-  if (!userId) throw new Error('Not authenticated');
+export const unmuteUser = command(
+  v.object({ targetUserId: v.string() }),
+  async ({ targetUserId }) => {
+    const event = getRequestEvent();
+    const userId = event.locals?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-  await db.delete(mutes).where(and(eq(mutes.muterId, userId), eq(mutes.mutedId, targetUserId)));
-  return { muted: false };
-});
+    await db.delete(mutes).where(and(eq(mutes.muterId, userId), eq(mutes.mutedId, targetUserId)));
+    return { muted: false };
+  }
+);
 
-export const blockUser = command(v.object({ targetUserId: v.string() }), async ({ targetUserId }) => {
-  const event = getRequestEvent();
-  const userId = event.locals?.user?.id;
-  if (!userId) throw new Error('Not authenticated');
+export const blockUser = command(
+  v.object({ targetUserId: v.string() }),
+  async ({ targetUserId }) => {
+    const event = getRequestEvent();
+    const userId = event.locals?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-  await db.insert(blocks).values({ blockerId: userId, blockedId: targetUserId }).onConflictDoNothing();
-  return { blocked: true };
-});
+    await db
+      .insert(blocks)
+      .values({ blockerId: userId, blockedId: targetUserId })
+      .onConflictDoNothing();
+    return { blocked: true };
+  }
+);
 
 export const markNotInterested = command(PostIdInput, async ({ postId }) => {
   const event = getRequestEvent();
@@ -457,18 +551,24 @@ export const createPost = command(CreatePostInput, async (input) => {
   const userId = event.locals?.user?.id;
   if (!userId) throw new Error('Not authenticated');
 
-  const [post] = await db.insert(posts).values({
-    authorId: userId,
-    postType: input.postType as any,
-    content: input.content,
-    courseId: input.courseId,
-    topicTags: input.topicTags ?? [],
-    isVisible: true,
-  }).returning({ id: posts.id });
+  const [post] = await db
+    .insert(posts)
+    .values({
+      authorId: userId,
+      postType: input.postType as any,
+      content: input.content,
+      courseId: input.courseId,
+      topicTags: input.topicTags ?? [],
+      isVisible: true,
+    })
+    .returning({ id: posts.id });
 
   // Award XP for posting
   await db.insert(xpEvents).values({ userId, eventType: 'post_created', xpAwarded: 5 });
-  await db.update(users).set({ xp: sql`${users.xp} + 5` }).where(eq(users.id, userId));
+  await db
+    .update(users)
+    .set({ xp: sql`${users.xp} + 5` })
+    .where(eq(users.id, userId));
 
   return { postId: post.id };
 });
@@ -488,8 +588,11 @@ export const submitQuizAnswer = command(QuizAnswerInput, async (input) => {
   if (!userId) throw new Error('Not authenticated');
 
   // Get post to verify correct answer
-  const [post] = await db.select({ content: posts.content, courseId: posts.courseId })
-    .from(posts).where(eq(posts.id, input.postId)).limit(1);
+  const [post] = await db
+    .select({ content: posts.content, courseId: posts.courseId })
+    .from(posts)
+    .where(eq(posts.id, input.postId))
+    .limit(1);
   if (!post) throw new Error('Post not found');
 
   const content = post.content as any;
@@ -497,27 +600,44 @@ export const submitQuizAnswer = command(QuizAnswerInput, async (input) => {
   const xpAwarded = isCorrect ? 10 : 2;
 
   // Record interaction with answer payload
-  await db.insert(interactions).values({
-    userId,
-    postId: input.postId,
-    type: 'quiz_answer',
-    payload: { optionId: input.optionId, isCorrect },
-  }).onConflictDoNothing();
+  await db
+    .insert(interactions)
+    .values({
+      userId,
+      postId: input.postId,
+      type: 'quiz_answer',
+      payload: { optionId: input.optionId, isCorrect },
+    })
+    .onConflictDoNothing();
 
   // Award XP
-  await db.insert(xpEvents).values({ userId, eventType: isCorrect ? 'quiz_correct' : 'quiz_attempt', xpAwarded });
-  await db.update(users).set({ xp: sql`${users.xp} + ${xpAwarded}` }).where(eq(users.id, userId));
+  await db
+    .insert(xpEvents)
+    .values({ userId, eventType: isCorrect ? 'quiz_correct' : 'quiz_attempt', xpAwarded });
+  await db
+    .update(users)
+    .set({ xp: sql`${users.xp} + ${xpAwarded}` })
+    .where(eq(users.id, userId));
 
   // Update mastery if topic + course provided
   if (input.topic && (input.courseId ?? post.courseId)) {
     const cId = input.courseId ?? post.courseId!;
     await db
       .insert(topicMastery)
-      .values({ userId, courseId: cId, topic: input.topic, score: isCorrect ? 60 : 40, attempts: 1, correct: isCorrect ? 1 : 0 })
+      .values({
+        userId,
+        courseId: cId,
+        topic: input.topic,
+        score: isCorrect ? 60 : 40,
+        attempts: 1,
+        correct: isCorrect ? 1 : 0,
+      })
       .onConflictDoUpdate({
         target: [topicMastery.userId, topicMastery.courseId, topicMastery.topic],
         set: {
-          score: isCorrect ? sql`LEAST(${topicMastery.score} + 5, 100)` : sql`GREATEST(${topicMastery.score} - 3, 0)`,
+          score: isCorrect
+            ? sql`LEAST(${topicMastery.score} + 5, 100)`
+            : sql`GREATEST(${topicMastery.score} - 3, 0)`,
           attempts: sql`${topicMastery.attempts} + 1`,
           correct: isCorrect ? sql`${topicMastery.correct} + 1` : topicMastery.correct,
           updatedAt: new Date(),
@@ -542,13 +662,21 @@ export const submitFlashcardResult = command(FlashcardResultInput, async (input)
 
   const xpAwarded = input.known ? 5 : 2;
 
-  await db.insert(interactions).values({
-    userId, postId: input.postId, type: 'flashcard_flip',
-    payload: { known: input.known },
-  }).onConflictDoNothing();
+  await db
+    .insert(interactions)
+    .values({
+      userId,
+      postId: input.postId,
+      type: 'flashcard_flip',
+      payload: { known: input.known },
+    })
+    .onConflictDoNothing();
 
   await db.insert(xpEvents).values({ userId, eventType: 'flashcard_reviewed', xpAwarded });
-  await db.update(users).set({ xp: sql`${users.xp} + ${xpAwarded}` }).where(eq(users.id, userId));
+  await db
+    .update(users)
+    .set({ xp: sql`${users.xp} + ${xpAwarded}` })
+    .where(eq(users.id, userId));
 
   return { xpAwarded };
 });
@@ -560,10 +688,15 @@ export const submitPollVote = command(PollVoteInput, async (input) => {
   const userId = event.locals?.user?.id;
   if (!userId) throw new Error('Not authenticated');
 
-  await db.insert(interactions).values({
-    userId, postId: input.postId, type: 'poll_vote',
-    payload: { optionId: input.optionId },
-  }).onConflictDoNothing();
+  await db
+    .insert(interactions)
+    .values({
+      userId,
+      postId: input.postId,
+      type: 'poll_vote',
+      payload: { optionId: input.optionId },
+    })
+    .onConflictDoNothing();
 
   return { success: true };
 });

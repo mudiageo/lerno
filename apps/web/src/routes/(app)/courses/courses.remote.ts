@@ -1,9 +1,16 @@
 import { query, command, form, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import {
-  userCourses, courseSchedule, courseMaterials,
-  posts, users, communities, communityMembers,
-  xpEvents, topicMastery, youtubeCache,
+  userCourses,
+  courseSchedule,
+  courseMaterials,
+  posts,
+  users,
+  communities,
+  communityMembers,
+  xpEvents,
+  topicMastery,
+  youtubeCache,
 } from '@lerno/db/schema';
 import { eq, and, desc, sql, asc, gte, lt, ilike, or, count } from '@lerno/db/drizzle';
 import * as v from 'valibot';
@@ -22,89 +29,84 @@ import {
 
 // ─── My Courses (dashboard) ───────────────────────────────────────────────────
 
-export const getMyCourses = query(
-  v.object({}),
-  async () => {
-    const event = getRequestEvent();
-    const userId = event.locals?.user?.id;
-    if (!userId) throw new Error('Not authenticated');
+export const getMyCourses = query(v.object({}), async () => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
+  if (!userId) throw new Error('Not authenticated');
 
-    const courses = await db
-      .select({
-        id: userCourses.id,
-        code: userCourses.code,
-        title: userCourses.title,
-        description: userCourses.description,
-        semester: userCourses.semester,
-        year: userCourses.year,
-        creditUnits: userCourses.creditUnits,
-        color: userCourses.color,
-        active: userCourses.active,
-        createdAt: userCourses.createdAt,
-      })
-      .from(userCourses)
-      .where(and(eq(userCourses.userId, userId), eq(userCourses.active, true)))
-      .orderBy(asc(userCourses.year), asc(userCourses.code));
+  const courses = await db
+    .select({
+      id: userCourses.id,
+      code: userCourses.code,
+      title: userCourses.title,
+      description: userCourses.description,
+      semester: userCourses.semester,
+      year: userCourses.year,
+      creditUnits: userCourses.creditUnits,
+      color: userCourses.color,
+      active: userCourses.active,
+      createdAt: userCourses.createdAt,
+    })
+    .from(userCourses)
+    .where(and(eq(userCourses.userId, userId), eq(userCourses.active, true)))
+    .orderBy(asc(userCourses.year), asc(userCourses.code));
 
-    // Enrich each course with stats
-    const enriched = await Promise.all(
-      courses.map(async (course) => {
-        // Mastery average for this course
-        const [masteryRow] = await db
-          .select({ avg: sql<number>`AVG(${topicMastery.score})` })
-          .from(topicMastery)
-          .where(and(eq(topicMastery.userId, userId), eq(topicMastery.courseId, course.id)));
+  // Enrich each course with stats
+  const enriched = await Promise.all(
+    courses.map(async (course) => {
+      // Mastery average for this course
+      const [masteryRow] = await db
+        .select({ avg: sql<number>`AVG(${topicMastery.score})` })
+        .from(topicMastery)
+        .where(and(eq(topicMastery.userId, userId), eq(topicMastery.courseId, course.id)));
 
-        // Flashcards due today
-        const [dueRow] = await db
-          .select({ count: count() })
-          .from(topicMastery)
-          .where(
-            and(
-              eq(topicMastery.userId, userId),
-              eq(topicMastery.courseId, course.id),
-              or(
-                sql`${topicMastery.fsrsDue} <= NOW()`,
-                sql`${topicMastery.fsrsDue} IS NULL`,
-              ),
-            ),
-          );
-
-        // Next upcoming exam
-        const [nextExam] = await db
-          .select({ scheduledAt: courseSchedule.scheduledAt, title: courseSchedule.title, eventType: courseSchedule.eventType })
-          .from(courseSchedule)
-          .where(
-            and(
-              eq(courseSchedule.courseId, course.id),
-              gte(courseSchedule.scheduledAt, new Date()),
-            ),
+      // Flashcards due today
+      const [dueRow] = await db
+        .select({ count: count() })
+        .from(topicMastery)
+        .where(
+          and(
+            eq(topicMastery.userId, userId),
+            eq(topicMastery.courseId, course.id),
+            or(sql`${topicMastery.fsrsDue} <= NOW()`, sql`${topicMastery.fsrsDue} IS NULL`)
           )
-          .orderBy(asc(courseSchedule.scheduledAt))
-          .limit(1);
+        );
 
-        // Post counts
-        const [postRow] = await db
-          .select({ count: count() })
-          .from(posts)
-          .where(and(eq(posts.courseId, course.id), eq(posts.isVisible, true)));
+      // Next upcoming exam
+      const [nextExam] = await db
+        .select({
+          scheduledAt: courseSchedule.scheduledAt,
+          title: courseSchedule.title,
+          eventType: courseSchedule.eventType,
+        })
+        .from(courseSchedule)
+        .where(
+          and(eq(courseSchedule.courseId, course.id), gte(courseSchedule.scheduledAt, new Date()))
+        )
+        .orderBy(asc(courseSchedule.scheduledAt))
+        .limit(1);
 
-        return {
-          ...course,
-          masteryPct: Math.round(masteryRow?.avg ?? 0),
-          flashcardsDue: dueRow?.count ?? 0,
-          postCount: postRow?.count ?? 0,
-          nextExam: nextExam
-            ? { ...nextExam, scheduledAt: nextExam.scheduledAt.toISOString() }
-            : null,
-          createdAt: course.createdAt?.toISOString() ?? new Date().toISOString(),
-        };
-      }),
-    );
+      // Post counts
+      const [postRow] = await db
+        .select({ count: count() })
+        .from(posts)
+        .where(and(eq(posts.courseId, course.id), eq(posts.isVisible, true)));
 
-    return enriched;
-  },
-);
+      return {
+        ...course,
+        masteryPct: Math.round(masteryRow?.avg ?? 0),
+        flashcardsDue: dueRow?.count ?? 0,
+        postCount: postRow?.count ?? 0,
+        nextExam: nextExam
+          ? { ...nextExam, scheduledAt: nextExam.scheduledAt.toISOString() }
+          : null,
+        createdAt: course.createdAt?.toISOString() ?? new Date().toISOString(),
+      };
+    })
+  );
+
+  return enriched;
+});
 
 // ─── Single course stats ──────────────────────────────────────────────────────
 
@@ -124,11 +126,7 @@ export const getCourseStats = query(
     // Try the AI-seeded course if user doesn't have it enrolled
     const [seedCourse] = course
       ? [course]
-      : await db
-        .select()
-        .from(userCourses)
-        .where(eq(userCourses.code, courseCode))
-        .limit(1);
+      : await db.select().from(userCourses).where(eq(userCourses.code, courseCode)).limit(1);
 
     if (!seedCourse) throw new Error('Course not found');
 
@@ -147,18 +145,14 @@ export const getCourseStats = query(
             and(
               eq(posts.courseId, courseId),
               eq(posts.postType, 'flashcard'),
-              eq(posts.isVisible, true),
-            ),
+              eq(posts.isVisible, true)
+            )
           ),
         db
           .select({ count: count() })
           .from(posts)
           .where(
-            and(
-              eq(posts.courseId, courseId),
-              eq(posts.postType, 'quiz'),
-              eq(posts.isVisible, true),
-            ),
+            and(eq(posts.courseId, courseId), eq(posts.postType, 'quiz'), eq(posts.isVisible, true))
           ),
         db
           .select({ count: count() })
@@ -167,11 +161,16 @@ export const getCourseStats = query(
             and(
               eq(posts.courseId, courseId),
               eq(posts.postType, 'video'),
-              eq(posts.isVisible, true),
-            ),
+              eq(posts.isVisible, true)
+            )
           ),
         db
-          .select({ id: communities.id, name: communities.name, slug: communities.slug, memberCount: communities.memberCount })
+          .select({
+            id: communities.id,
+            name: communities.name,
+            slug: communities.slug,
+            memberCount: communities.memberCount,
+          })
           .from(communities)
           .where(eq(communities.courseCode, courseCode))
           .limit(1),
@@ -185,7 +184,7 @@ export const getCourseStats = query(
       .select()
       .from(courseSchedule)
       .where(
-        and(eq(courseSchedule.courseId, courseId), gte(courseSchedule.scheduledAt, new Date())),
+        and(eq(courseSchedule.courseId, courseId), gte(courseSchedule.scheduledAt, new Date()))
       )
       .orderBy(asc(courseSchedule.scheduledAt))
       .limit(5);
@@ -204,42 +203,46 @@ export const getCourseStats = query(
         createdAt: e.createdAt?.toISOString() ?? '',
       })),
     };
-  },
+  }
 );
 
 // ─── Course catalog search ─────────────────────────────────────────────────────
 
-export const searchCourseCatalog = query(
-  v.object({ query: v.string() }),
-  async ({ query: q }) => {
-    const event = getRequestEvent();
-    const userId = event.locals?.user?.id;
+export const searchCourseCatalog = query(v.object({ query: v.string() }), async ({ query: q }) => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
 
-    // Query seeded courses (from AI user)
-    const results = await db
-      .select({ code: userCourses.code, title: userCourses.title, description: userCourses.description, year: userCourses.year, creditUnits: userCourses.creditUnits })
-      .from(userCourses)
-      .where(
-        or(
-          ilike(userCourses.code, `%${q}%`),
-          ilike(userCourses.title, `%${q}%`),
-        ),
-      )
-      .groupBy(userCourses.code, userCourses.title, userCourses.description, userCourses.year, userCourses.creditUnits)
-      .limit(20);
+  // Query seeded courses (from AI user)
+  const results = await db
+    .select({
+      code: userCourses.code,
+      title: userCourses.title,
+      description: userCourses.description,
+      year: userCourses.year,
+      creditUnits: userCourses.creditUnits,
+    })
+    .from(userCourses)
+    .where(or(ilike(userCourses.code, `%${q}%`), ilike(userCourses.title, `%${q}%`)))
+    .groupBy(
+      userCourses.code,
+      userCourses.title,
+      userCourses.description,
+      userCourses.year,
+      userCourses.creditUnits
+    )
+    .limit(20);
 
-    if (!userId) return results;
+  if (!userId) return results;
 
-    // Mark which ones the user is already enrolled in
-    const enrolled = await db
-      .select({ code: userCourses.code })
-      .from(userCourses)
-      .where(and(eq(userCourses.userId, userId), eq(userCourses.active, true)));
+  // Mark which ones the user is already enrolled in
+  const enrolled = await db
+    .select({ code: userCourses.code })
+    .from(userCourses)
+    .where(and(eq(userCourses.userId, userId), eq(userCourses.active, true)));
 
-    const enrolledCodes = new Set(enrolled.map((e) => e.code));
-    return results.map((r) => ({ ...r, enrolled: enrolledCodes.has(r.code) }));
-  },
-);
+  const enrolledCodes = new Set(enrolled.map((e) => e.code));
+  return results.map((r) => ({ ...r, enrolled: enrolledCodes.has(r.code) }));
+});
 
 // ─── Enroll / unenroll ────────────────────────────────────────────────────────
 
@@ -247,7 +250,9 @@ export const enrollCourse = command(
   v.object({
     code: v.string(),
     title: v.string(),
-    semester: v.optional(v.picklist(['first', 'second', 'summer', 'trimester_1', 'trimester_2', 'trimester_3'])),
+    semester: v.optional(
+      v.picklist(['first', 'second', 'summer', 'trimester_1', 'trimester_2', 'trimester_3'])
+    ),
     year: v.optional(v.number()),
     creditUnits: v.optional(v.number()),
     description: v.optional(v.string()),
@@ -268,7 +273,10 @@ export const enrollCourse = command(
     if (existing.length > 0) {
       if (!existing[0].active) {
         // Re-activate
-        await db.update(userCourses).set({ active: true }).where(eq(userCourses.id, existing[0].id));
+        await db
+          .update(userCourses)
+          .set({ active: true })
+          .where(eq(userCourses.id, existing[0].id));
         return { id: existing[0].id, reactivated: true };
       }
       return { id: existing[0].id, alreadyEnrolled: true };
@@ -280,22 +288,19 @@ export const enrollCourse = command(
       .returning({ id: userCourses.id });
 
     return { id: created.id };
-  },
+  }
 );
 
-export const unenrollCourse = command(
-  v.object({ courseId: v.string() }),
-  async ({ courseId }) => {
-    const event = getRequestEvent();
-    const userId = event.locals?.user?.id;
-    if (!userId) throw new Error('Not authenticated');
+export const unenrollCourse = command(v.object({ courseId: v.string() }), async ({ courseId }) => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
+  if (!userId) throw new Error('Not authenticated');
 
-    await db
-      .update(userCourses)
-      .set({ active: false })
-      .where(and(eq(userCourses.id, courseId), eq(userCourses.userId, userId)));
-  },
-);
+  await db
+    .update(userCourses)
+    .set({ active: false })
+    .where(and(eq(userCourses.id, courseId), eq(userCourses.userId, userId)));
+});
 
 // ─── Exam schedule ────────────────────────────────────────────────────────────
 
@@ -325,7 +330,7 @@ export const getExamSchedule = query(
       scheduledAt: e.scheduledAt.toISOString(),
       createdAt: e.createdAt?.toISOString() ?? '',
     }));
-  },
+  }
 );
 
 export const addExamDate = command(
@@ -366,7 +371,7 @@ export const addExamDate = command(
       .returning();
 
     return { ...created, scheduledAt: created.scheduledAt.toISOString() };
-  },
+  }
 );
 
 export const deleteExamDate = command(
@@ -379,7 +384,7 @@ export const deleteExamDate = command(
     await db
       .delete(courseSchedule)
       .where(and(eq(courseSchedule.id, scheduleId), eq(courseSchedule.userId, userId)));
-  },
+  }
 );
 
 // ─── Course videos ────────────────────────────────────────────────────────────
@@ -407,25 +412,25 @@ export const getCourseVideos = query(
 
     const uploadedVideos = course
       ? await db
-        .select({
-          id: posts.id,
-          content: posts.content,
-          postType: posts.postType,
-          likeCount: posts.likeCount,
-          viewCount: posts.viewCount,
-          aiGenerated: posts.aiGenerated,
-          createdAt: posts.createdAt,
-        })
-        .from(posts)
-        .where(
-          and(
-            eq(posts.courseId, course.id),
-            or(eq(posts.postType, 'video'), eq(posts.postType, 'short')),
-            eq(posts.isVisible, true),
-          ),
-        )
-        .orderBy(desc(posts.createdAt))
-        .limit(30)
+          .select({
+            id: posts.id,
+            content: posts.content,
+            postType: posts.postType,
+            likeCount: posts.likeCount,
+            viewCount: posts.viewCount,
+            aiGenerated: posts.aiGenerated,
+            createdAt: posts.createdAt,
+          })
+          .from(posts)
+          .where(
+            and(
+              eq(posts.courseId, course.id),
+              or(eq(posts.postType, 'video'), eq(posts.postType, 'short')),
+              eq(posts.isVisible, true)
+            )
+          )
+          .orderBy(desc(posts.createdAt))
+          .limit(30)
       : [];
 
     return {
@@ -435,7 +440,7 @@ export const getCourseVideos = query(
         createdAt: v.createdAt?.toISOString() ?? new Date().toISOString(),
       })),
     };
-  },
+  }
 );
 
 // ─── Course materials ─────────────────────────────────────────────────────────
@@ -465,7 +470,7 @@ export const getCourseMaterials = query(
       ...m,
       createdAt: m.createdAt?.toISOString() ?? new Date().toISOString(),
     }));
-  },
+  }
 );
 
 export const uploadCourseMaterial = form(
@@ -488,14 +493,20 @@ export const uploadCourseMaterial = form(
     if (!course) throw new Error('Course not found');
 
     const storageKey = `materials/${userId}/${courseCode}/${Date.now()}-${file.name}`;
-    
+
     // Detect type
     const type: 'pdf' | 'slide' | 'note' | 'image' | 'video' | 'audio' | 'other' =
-      file.type.includes("pdf")? "pdf" :
-      file.type.includes("image")? "image" :
-      file.type.includes("video")? "video" :
-      file.type.includes("audio")? "audio" :
-      /\.(ppt|pptx|key)$/i.test(file.name)? "slide" : "other";
+      file.type.includes('pdf')
+        ? 'pdf'
+        : file.type.includes('image')
+          ? 'image'
+          : file.type.includes('video')
+            ? 'video'
+            : file.type.includes('audio')
+              ? 'audio'
+              : /\.(ppt|pptx|key)$/i.test(file.name)
+                ? 'slide'
+                : 'other';
 
     const [material] = await db
       .insert(courseMaterials)
@@ -508,8 +519,8 @@ export const uploadCourseMaterial = form(
         processed: false,
       })
       .returning();
-      
-    const contentType = file.type || "application/octet-stream";
+
+    const contentType = file.type || 'application/octet-stream';
     const uploadUrl = await storage.upload(storageKey, file.stream(), contentType);
 
     // AI enrichment — run asynchronously so the upload response is fast
@@ -529,7 +540,7 @@ export const uploadCourseMaterial = form(
       uploadUrl,
       storageKey,
     };
-  },
+  }
 );
 
 // ─── AI material enrichment (runs async after upload) ─────────────────────────
@@ -667,10 +678,14 @@ export const generateAIPost = command(GenerateAIPostInput, async (input) => {
         parts.push(`Key points:\n${mat.keyPoints.map((k) => `- ${k.point}`).join('\n')}`);
       }
       if (mat.definitions?.length) {
-        parts.push(`Definitions:\n${mat.definitions.map((d) => `- ${d.term}: ${d.definition}`).join('\n')}`);
+        parts.push(
+          `Definitions:\n${mat.definitions.map((d) => `- ${d.term}: ${d.definition}`).join('\n')}`
+        );
       }
       if (mat.potentialQuestions?.length) {
-        parts.push(`Potential questions:\n${mat.potentialQuestions.map((q) => `- ${q}`).join('\n')}`);
+        parts.push(
+          `Potential questions:\n${mat.potentialQuestions.map((q) => `- ${q}`).join('\n')}`
+        );
       }
       context = parts.join('\n\n');
 
@@ -746,8 +761,13 @@ export const saveAIPost = command(SaveAIPostInput, async (input) => {
     })
     .returning({ id: posts.id });
 
-  await db.insert(xpEvents).values({ userId, eventType: 'post_created', xpAwarded: 5, courseId: input.courseId });
-  await db.update(users).set({ xp: sql`${users.xp} + 5` }).where(eq(users.id, userId));
+  await db
+    .insert(xpEvents)
+    .values({ userId, eventType: 'post_created', xpAwarded: 5, courseId: input.courseId });
+  await db
+    .update(users)
+    .set({ xp: sql`${users.xp} + 5` })
+    .where(eq(users.id, userId));
 
   return { postId: post.id };
 });
@@ -785,16 +805,11 @@ export const getCourseLeaderboard = query(
       })
       .from(xpEvents)
       .leftJoin(users, eq(xpEvents.userId, users.id))
-      .where(
-        and(
-          eq(xpEvents.courseId, course.id),
-          gte(xpEvents.createdAt, since),
-        ),
-      )
+      .where(and(eq(xpEvents.courseId, course.id), gte(xpEvents.createdAt, since)))
       .groupBy(xpEvents.userId, users.displayName, users.username, users.avatarUrl)
       .orderBy(desc(sql`SUM(${xpEvents.xpAwarded})`))
       .limit(50);
 
     return rows.map((r, i) => ({ rank: i + 1, ...r }));
-  },
+  }
 );

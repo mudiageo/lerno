@@ -26,13 +26,23 @@ export const getProfile = query(v.object({ username: v.string() }), async ({ use
 
   if (!user) throw new Error('User not found');
 
-  const [followerCount] = await (db as any).select({ count: count() }).from(follows).where(eq(follows.followingId as any, user.id));
-  const [followingCount] = await (db as any).select({ count: count() }).from(follows).where(eq(follows.followerId as any, user.id));
-  const [postCount] = await (db as any).select({ count: count() }).from(posts).where(eq(posts.authorId as any, user.id));
+  const [followerCount] = await (db as any)
+    .select({ count: count() })
+    .from(follows)
+    .where(eq(follows.followingId as any, user.id));
+  const [followingCount] = await (db as any)
+    .select({ count: count() })
+    .from(follows)
+    .where(eq(follows.followerId as any, user.id));
+  const [postCount] = await (db as any)
+    .select({ count: count() })
+    .from(posts)
+    .where(eq(posts.authorId as any, user.id));
 
   let isFollowing = false;
   if (viewerId && viewerId !== user.id) {
-    const [f] = await (db as any).select({ followerId: follows.followerId })
+    const [f] = await (db as any)
+      .select({ followerId: follows.followerId })
       .from(follows)
       .where(and(eq(follows.followerId as any, viewerId), eq(follows.followingId as any, user.id)))
       .limit(1);
@@ -54,7 +64,11 @@ export const getProfile = query(v.object({ username: v.string() }), async ({ use
 export const getProfilePosts = query(
   v.object({ username: v.string(), cursor: v.optional(v.string()) }),
   async ({ username }) => {
-    const [user] = await (db as any).select({ id: users.id }).from(users).where(eq(users.username as any, username)).limit(1);
+    const [user] = await (db as any)
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.username as any, username))
+      .limit(1);
     if (!user) throw new Error('User not found');
 
     const rows = await (db as any)
@@ -72,26 +86,39 @@ export const getProfilePosts = query(
       .orderBy(desc(posts.createdAt as any))
       .limit(20);
 
-    return rows.map((p: any) => ({ ...p, createdAt: p.createdAt?.toISOString() ?? new Date().toISOString() }));
+    return rows.map((p: any) => ({
+      ...p,
+      createdAt: p.createdAt?.toISOString() ?? new Date().toISOString(),
+    }));
   }
 );
 
-export const toggleFollow = command(v.object({ targetUserId: v.string() }), async ({ targetUserId }) => {
-  const event = getRequestEvent();
-  const userId = event.locals?.user?.id;
-  if (!userId) throw new Error('Not authenticated');
-  if (userId === targetUserId) throw new Error('Cannot follow yourself');
+export const toggleFollow = command(
+  v.object({ targetUserId: v.string() }),
+  async ({ targetUserId }) => {
+    const event = getRequestEvent();
+    const userId = event.locals?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+    if (userId === targetUserId) throw new Error('Cannot follow yourself');
 
-  const [existing] = await (db as any).select({ followerId: follows.followerId })
-    .from(follows)
-    .where(and(eq(follows.followerId as any, userId), eq(follows.followingId as any, targetUserId)))
-    .limit(1);
+    const [existing] = await (db as any)
+      .select({ followerId: follows.followerId })
+      .from(follows)
+      .where(
+        and(eq(follows.followerId as any, userId), eq(follows.followingId as any, targetUserId))
+      )
+      .limit(1);
 
-  if (existing) {
-    await (db as any).delete(follows).where(and(eq(follows.followerId as any, userId), eq(follows.followingId as any, targetUserId)));
-    return { following: false };
-  } else {
-    await (db as any).insert(follows).values({ followerId: userId, followingId: targetUserId });
-    return { following: true };
+    if (existing) {
+      await (db as any)
+        .delete(follows)
+        .where(
+          and(eq(follows.followerId as any, userId), eq(follows.followingId as any, targetUserId))
+        );
+      return { following: false };
+    } else {
+      await (db as any).insert(follows).values({ followerId: userId, followingId: targetUserId });
+      return { following: true };
+    }
   }
-});
+);

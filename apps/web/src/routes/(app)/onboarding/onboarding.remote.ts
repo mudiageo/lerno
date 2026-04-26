@@ -5,18 +5,20 @@ import { eq } from '@lerno/db/drizzle';
 import PgBoss from 'pg-boss';
 import * as v from 'valibot';
 
-// Initialize boss instance strictly to trigger jobs 
+// Initialize boss instance strictly to trigger jobs
 // Note: In production you'd use a singleton from @lerno/jobs, but we export the boss class
 const boss = new PgBoss(process.env.DATABASE_URL!);
 boss.start().catch(console.error);
 
 const OnboardingSchema = v.object({
   username: v.pipe(v.string(), v.minLength(3), v.maxLength(30)),
-  courses: v.array(v.object({
-    code: v.string(),
-    title: v.string(),
-    semester: v.string(),
-  })),
+  courses: v.array(
+    v.object({
+      code: v.string(),
+      title: v.string(),
+      semester: v.string(),
+    })
+  ),
   preferences: v.object({
     theme: v.picklist(['light', 'dark', 'oled', 'system']),
     aiEnabled: v.boolean(),
@@ -35,36 +37,42 @@ export const completeOnboarding = command(OnboardingSchema, async (data) => {
 
   await db.transaction(async (tx) => {
     // 1. Update Username & Preferences
-    await tx.update(users).set({
-      username,
-      theme: preferences.theme,
-      aiEnabled: preferences.aiEnabled,
-    }).where(eq(users.id, userId));
+    await tx
+      .update(users)
+      .set({
+        username,
+        theme: preferences.theme,
+        aiEnabled: preferences.aiEnabled,
+      })
+      .where(eq(users.id, userId));
 
     // 2. Insert courses (deduplicated by code)
     if (courses.length > 0) {
       // Basic deduplication for safety
-      const uniqueCourses = courses.filter((c, index, self) =>
-        index === self.findIndex((t) => t.code === c.code)
+      const uniqueCourses = courses.filter(
+        (c, index, self) => index === self.findIndex((t) => t.code === c.code)
       );
 
       await tx.insert(userCourses).values(
-        uniqueCourses.map(c => ({
+        uniqueCourses.map((c) => ({
           userId,
           code: c.code,
           title: c.title,
           semester: c.semester,
-          active: true
+          active: true,
         }))
       );
     }
 
     // 3. Award first-login XP
-    await tx.insert(xpEvents).values({
-      userId,
-      eventType: 'daily_login',
-      xpAwarded: 5,
-    }).onConflictDoNothing();
+    await tx
+      .insert(xpEvents)
+      .values({
+        userId,
+        eventType: 'daily_login',
+        xpAwarded: 5,
+      })
+      .onConflictDoNothing();
   });
 
   // 4. Queue initial content generation (out of transaction for performance)
