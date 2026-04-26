@@ -598,7 +598,7 @@ async function enrichMaterialWithAI(params: {
         courseTitle: params.courseTitle,
         title: params.title,
         type: params.type,
-        extractedText: extractedText.slice(0, 8000),
+        extractedText: extractedText.slice(0, MAX_EXTRACTED_TEXT_LENGTH),
       });
       const raw = await ai.generate({
         messages: [{ role: 'user', content: prompt }],
