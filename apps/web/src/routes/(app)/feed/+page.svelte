@@ -6,6 +6,7 @@
     likePost,
     bookmarkPost,
     repostPost,
+    deletePost,
   } from "./feed.remote";
   import { InfiniteFeed, PostComposer } from "@lerno/ui/components/feed";
   import { Badge } from "@lerno/ui/components/ui/badge";
@@ -123,6 +124,21 @@
       toast.error("Failed to repost");
     }
   }
+
+  async function handleDelete(postId: string) {
+    try {
+      await deletePost({ postId }).updates(
+        getFeed({}).withOverride((data) => ({
+          ...data,
+          posts: data.posts.filter((p) => p.id !== postId),
+        })),
+      );
+      extraPosts = extraPosts.filter((p) => p.id !== postId);
+      toast.success("Post deleted");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete post");
+    }
+  }
 </script>
 
 <svelte:head>
@@ -183,6 +199,8 @@
       {loadingMore}
       hasMore={!!feed.nextCursor}
       onLoadMore={loadMore}
+      currentUserId={user?.id}
+      onDelete={handleDelete}
     />
 
     {#snippet pending()}

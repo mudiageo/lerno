@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { getCourseMaterials, uploadCourseMaterial, generateAIPost, saveAIPost, getMaterialGeneratedPosts } from "../../courses.remote";
+  import { getCourseMaterials, uploadCourseMaterial, generateAIPost, saveAIPost, getMaterialGeneratedPosts, deleteCourseMaterial } from "../../courses.remote";
   import { Button } from "@lerno/ui/components/ui/button";
   import { Badge } from "@lerno/ui/components/ui/badge";
   import { Skeleton } from "@lerno/ui/components/ui/skeleton";
@@ -20,7 +20,9 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
   import Send from "@lucide/svelte/icons/send";
+  import Trash2 from "@lucide/svelte/icons/trash-2";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import * as AlertDialog from "@lerno/ui/components/ui/alert-dialog";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Clapperboard from "@lucide/svelte/icons/clapperboard";
   import Video from "@lucide/svelte/icons/video";
@@ -45,6 +47,10 @@
 
   // Per-material expanded AI info
   let expandedMaterials = $state<Set<string>>(new Set());
+
+  // Delete state
+  let deletingMaterialId = $state<string | null>(null);
+  let deletingMaterial = $state(false);
 
   const { courseCode, title, file } = uploadCourseMaterial.fields;
 
@@ -121,6 +127,20 @@
       expandedMaterials.add(id);
     }
     expandedMaterials = new Set(expandedMaterials);
+  }
+
+  async function handleDeleteMaterial(materialId: string) {
+    deletingMaterial = true;
+    try {
+      await deleteCourseMaterial({ materialId });
+      materials = materials.filter((m) => m.id !== materialId);
+      toast.success("Material deleted");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete material");
+    } finally {
+      deletingMaterial = false;
+      deletingMaterialId = null;
+    }
   }
 
   function openGenerateDialog(materialId?: string) {
@@ -243,6 +263,8 @@
     <div
       class="hidden sm:flex items-center gap-2 p-3 rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground transition-colors
              {dragOver ? 'border-brand-500 bg-brand-50/30 dark:bg-brand-950/10 text-brand-500' : ''}"
+      role="region"
+      aria-label="Drop files here to upload"
       ondragover={(e) => { e.preventDefault(); dragOver = true; }}
       ondragleave={() => (dragOver = false)}
       ondrop={onDrop}
@@ -307,6 +329,13 @@
                   <Download class="size-4" />
                 </a>
               {/if}
+              <button
+                class="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete material"
+                onclick={(e) => { e.stopPropagation(); deletingMaterialId = material.id; }}
+              >
+                <Trash2 class="size-4" />
+              </button>
               {#if material.processed && (material.summary || topics.length > 0)}
                 <button
                   class="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -415,6 +444,28 @@
     </div>
   {/if}
 </div>
+
+<!-- Delete Material Confirmation Dialog -->
+<AlertDialog.Root open={!!deletingMaterialId} onOpenChange={(open) => { if (!open) deletingMaterialId = null; }}>
+  <AlertDialog.Content class="max-w-sm">
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete material?</AlertDialog.Title>
+      <AlertDialog.Description>
+        This will permanently delete the material and its AI-generated data. This action cannot be undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel onclick={() => (deletingMaterialId = null)}>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        onclick={() => deletingMaterialId && handleDeleteMaterial(deletingMaterialId)}
+        disabled={deletingMaterial}
+      >
+        {#if deletingMaterial}Deleting…{:else}Delete{/if}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <!-- Upload Dialog -->
 <Dialog.Root bind:open={uploadOpen}>

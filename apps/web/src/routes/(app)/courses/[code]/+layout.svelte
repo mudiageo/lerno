@@ -21,7 +21,7 @@
 
   const courseCode = $derived(page.params.code);
 
-  const stats = await getCourseStats({ courseCode });
+  const stats = await getCourseStats({ courseCode: page.params.code });
   const course = $derived(stats.course);
 
   const tabs = $derived([

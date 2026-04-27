@@ -8,13 +8,17 @@
     loading = false,
     loadingMore = false,
     hasMore = false,
+    currentUserId = undefined,
     onLoadMore,
+    onDelete,
   }: {
     posts?: any[];
     loading?: boolean;
     loadingMore?: boolean;
     hasMore?: boolean;
+    currentUserId?: string;
     onLoadMore?: () => void;
+    onDelete?: (id: string) => void;
   } = $props();
 
   let sentinel = $state<HTMLDivElement | null>(null);
@@ -58,7 +62,7 @@
     </div>
   {:else}
     {#each posts as post, i (post.id)}
-      <PostCard {post} index={i} />
+      <PostCard {post} index={i} {currentUserId} {onDelete} />
     {/each}
 
     <div bind:this={sentinel} class="h-1"></div>

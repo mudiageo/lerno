@@ -1,6 +1,9 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { useSession } from "$lib/auth.svelte";
   import { InfiniteFeed } from "@lerno/ui/components/feed";
+  import { deletePost } from "../../../feed/feed.remote";
+  import { toast } from "@lerno/ui/components/ui/sonner";
   import { Button } from "@lerno/ui/components/ui/button";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Layers from "@lucide/svelte/icons/layers";
@@ -10,6 +13,10 @@
   import MessageSquare from "@lucide/svelte/icons/message-square";
 
   const courseCode = page.params.code;
+
+  const getSession = useSession();
+  const session = $derived($getSession);
+  const user = $derived(session.data?.user);
 
   type FeedFilter = "all" | "quiz" | "flashcard" | "video" | "link" | "text";
   let filter = $state<FeedFilter>("all");
@@ -22,6 +29,15 @@
     link: Link2,
     text: MessageSquare,
   };
+
+  async function handleDelete(postId: string) {
+    try {
+      await deletePost({ postId });
+      toast.success("Post deleted");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete post");
+    }
+  }
 </script>
 
 <div class="space-y-0">
@@ -44,5 +60,10 @@
   </div>
 
   <!-- Feed -->
-  <InfiniteFeed {courseCode} postType={filter === "all" ? undefined : filter} />
+  <InfiniteFeed
+    {courseCode}
+    postType={filter === "all" ? undefined : filter}
+    currentUserId={user?.id}
+    onDelete={handleDelete}
+  />
 </div>

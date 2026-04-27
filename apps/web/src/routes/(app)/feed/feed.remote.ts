@@ -573,6 +573,27 @@ export const createPost = command(CreatePostInput, async (input) => {
   return { postId: post.id };
 });
 
+// ─── Delete Post ───────────────────────────────────────────────────────────────
+
+export const deletePost = command(v.object({ postId: v.string() }), async ({ postId }) => {
+  const event = getRequestEvent();
+  const userId = event.locals?.user?.id;
+  if (!userId) throw new Error('Not authenticated');
+
+  const [post] = await db
+    .select({ id: posts.id, authorId: posts.authorId })
+    .from(posts)
+    .where(eq(posts.id, postId))
+    .limit(1);
+
+  if (!post) throw new Error('Post not found');
+  if (post.authorId !== userId) throw new Error('You can only delete your own posts');
+
+  await db.update(posts).set({ isVisible: false }).where(eq(posts.id, postId));
+
+  await getFeed({}).refresh();
+});
+
 // ─── Quiz / Flashcard / Poll ───────────────────────────────────────────────────
 
 const QuizAnswerInput = v.object({

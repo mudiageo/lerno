@@ -104,6 +104,7 @@
     onReport?: (id: string, reason: string) => void;
     onNotInterested?: (id: string) => void;
     onImpression?: (id: string) => void;
+    onDelete?: (id: string) => void;
   } = $props();
 
   const liked = $derived(post.liked ?? false);
@@ -313,7 +314,16 @@
                 </DropdownMenu.Item>
               {/if}
               <DropdownMenu.Separator />
-              {#if !isOwnPost}
+              {#if isOwnPost}
+                <DropdownMenu.Item
+                  class="text-destructive focus:text-destructive"
+                  onSelect={() => {
+                    onDelete?.(post.id);
+                  }}
+                >
+                  Delete post
+                </DropdownMenu.Item>
+              {:else}
                 <DropdownMenu.Item
                   class="text-destructive focus:text-destructive"
                   onSelect={() => {

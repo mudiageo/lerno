@@ -30,6 +30,52 @@ import {
   buildVideoScriptPrompt,
 } from '@lerno/ai';
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Safely parse a JSON string returned by an AI model.
+ * Handles common failure modes:
+ *  - Empty / whitespace-only string
+ *  - Markdown code fences (```json … ``` or ``` … ```)
+ *  - Trailing commas and other minor syntax issues by falling back to a
+ *    best-effort extraction of the first complete JSON object/array.
+ */
+function safeParseJSON(raw: string): any {
+  if (!raw || !raw.trim()) throw new Error('AI returned an empty response');
+
+  // Strip markdown fences
+  let text = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
+  // Try direct parse first
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Try to extract first complete JSON object or array by matching balanced braces
+    const start = text.search(/[{[]/);
+    if (start !== -1) {
+      const opener = text[start];
+      const closer = opener === '{' ? '}' : ']';
+      let depth = 0;
+      let end = -1;
+      for (let i = start; i < text.length; i++) {
+        if (text[i] === opener) depth++;
+        else if (text[i] === closer) {
+          depth--;
+          if (depth === 0) { end = i; break; }
+        }
+      }
+      if (end !== -1) {
+        try {
+          return JSON.parse(text.slice(start, end + 1));
+        } catch {
+          // fall through
+        }
+      }
+    }
+    throw new Error(`AI returned invalid JSON: ${raw.slice(0, 200)}`);
+  }
+}
+
 // ─── My Courses (dashboard) ───────────────────────────────────────────────────
 
 export const getMyCourses = query(v.object({}), async () => {
@@ -390,6 +436,35 @@ export const deleteExamDate = command(
   }
 );
 
+// ─── Delete course material ───────────────────────────────────────────────────
+
+export const deleteCourseMaterial = command(
+  v.object({ materialId: v.string() }),
+  async ({ materialId }) => {
+    const event = getRequestEvent();
+    const userId = event.locals?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+
+    const [material] = await db
+      .select({ id: courseMaterials.id, storageKey: courseMaterials.storageKey })
+      .from(courseMaterials)
+      .where(and(eq(courseMaterials.id, materialId), eq(courseMaterials.userId, userId)))
+      .limit(1);
+
+    if (!material) throw new Error('Material not found or not owned by you');
+
+    if (material.storageKey) {
+      try {
+        await storage.delete(material.storageKey);
+      } catch {
+        // Ignore storage cleanup errors — row deletion is the source of truth
+      }
+    }
+
+    await db.delete(courseMaterials).where(eq(courseMaterials.id, materialId));
+  }
+);
+
 // ─── Course videos ────────────────────────────────────────────────────────────
 
 export const getCourseVideos = query(
@@ -600,7 +675,7 @@ async function enrichMaterialWithAI(params: {
         imageBase64: base64,
         mimeType: fileMimeType,
       });
-      aiResult = JSON.parse(raw);
+      aiResult = safeParseJSON(raw);
     } else if (params.type !== 'video' && params.type !== 'audio' && isGeminiNativeType(fileMimeType)) {
       // PDFs and text-type files: pass directly to Gemini — small files use
       // inline data, large files are uploaded via the Gemini File API.
@@ -619,9 +694,9 @@ async function enrichMaterialWithAI(params: {
         fileName: params.file.name || params.title,
         systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
         jsonMode: true,
-        maxTokens: 1500,
+        maxTokens: 2048,
       });
-      aiResult = JSON.parse(raw);
+      aiResult = safeParseJSON(raw);
     } else {
       // Unsupported binary formats (PPTX, DOCX) or video/audio:
       // try basic text extraction and fall back to title-only context.
@@ -645,9 +720,9 @@ async function enrichMaterialWithAI(params: {
         messages: [{ role: 'user', content: prompt }],
         systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
         jsonMode: true,
-        maxTokens: 1500,
+        maxTokens: 2048,
       });
-      aiResult = JSON.parse(raw);
+      aiResult = safeParseJSON(raw);
     }
 
     await db
@@ -775,10 +850,10 @@ export const generateAIPost = command(GenerateAIPostInput, async (input) => {
     messages: [{ role: 'user', content: prompt }],
     systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
     jsonMode: true,
-    maxTokens: 1000,
+    maxTokens: 1500,
   });
 
-  const draft = JSON.parse(raw);
+  const draft = safeParseJSON(raw);
   return { draft, postType: input.postType, courseId: course.id, materialId: input.materialId ?? null };
 });
 
