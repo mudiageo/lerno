@@ -62,15 +62,17 @@ export class GeminiProvider implements AIProvider {
     maxTokens?: number;
   }): Promise<string> {
     const buffer = Buffer.from(fileData);
-    const filePart: any =
-      buffer.length < INLINE_SIZE_LIMIT_BYTES
-        ? { inlineData: { mimeType, data: buffer.toString('base64') } }
-        : await this._uploadFileAndGetPart(buffer, mimeType, fileName);
 
+    // Determine whether to use inline data or the File API
+    let filePart: any;
     let uploadedFileName: string | undefined;
-    if (filePart.fileData) {
-      // Extract the File API resource name so we can clean up after
-      uploadedFileName = filePart._resourceName;
+
+    if (buffer.length < INLINE_SIZE_LIMIT_BYTES) {
+      filePart = { inlineData: { mimeType, data: buffer.toString('base64') } };
+    } else {
+      const { part, resourceName } = await this._uploadFileAndGetPart(buffer, mimeType, fileName);
+      filePart = part;
+      uploadedFileName = resourceName;
     }
 
     try {
@@ -95,22 +97,20 @@ export class GeminiProvider implements AIProvider {
     }
   }
 
-  /** Upload file via the Gemini File API and return a fileData part. */
+  /** Upload file via the Gemini File API and return a fileData part + resource name. */
   private async _uploadFileAndGetPart(
     buffer: Buffer,
     mimeType: string,
     displayName: string,
-  ) {
+  ): Promise<{ part: any; resourceName: string }> {
     const uploaded = await this.genaiClient.files.upload({
       file: new Blob([buffer], { type: mimeType }),
       config: { mimeType, displayName },
     });
 
-    const part: any = {
-      fileData: { mimeType, fileUri: uploaded.uri },
-      // Internal field so we can delete after use
-      _resourceName: uploaded.name,
+    return {
+      part: { fileData: { mimeType, fileUri: uploaded.uri } },
+      resourceName: uploaded.name,
     };
-    return part;
   }
 }

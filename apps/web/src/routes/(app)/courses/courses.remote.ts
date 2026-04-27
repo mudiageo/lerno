@@ -551,30 +551,20 @@ export const uploadCourseMaterial = form(
 const MAX_EXTRACTED_TEXT_LENGTH = 8000;
 
 /**
- * MIME types that Gemini can process natively (PDF, plain text variants, etc.).
- * These are sent directly to the model as file data instead of trying to extract
- * text with file.text() which fails for binary formats like PDF.
+ * Non-text MIME types that Gemini can process natively.
+ * All `text/*` subtypes are accepted via the `isGeminiNativeType` check below.
  */
-const GEMINI_NATIVE_MIME_TYPES = new Set([
+const GEMINI_NATIVE_NON_TEXT_MIME_TYPES = new Set([
   'application/pdf',
-  'text/plain',
-  'text/html',
-  'text/css',
-  'text/javascript',
+  'application/javascript',
   'application/x-javascript',
-  'text/x-typescript',
   'application/x-typescript',
-  'text/csv',
-  'text/markdown',
-  'text/xml',
   'application/xml',
   'application/rtf',
 ]);
 
 function isGeminiNativeType(mimeType: string): boolean {
-  if (GEMINI_NATIVE_MIME_TYPES.has(mimeType)) return true;
-  // Also match text/* broadly
-  return mimeType.startsWith('text/');
+  return mimeType.startsWith('text/') || GEMINI_NATIVE_NON_TEXT_MIME_TYPES.has(mimeType);
 }
 
 async function enrichMaterialWithAI(params: {
