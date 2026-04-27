@@ -2,19 +2,19 @@ import { GoogleGenAI } from '@google/genai';
 
 /**
  * Shared client for Google GenAI services.
- * In a real app, this would be configured via env vars.
+ * Reads GOOGLE_GENAI_API_KEY first, then falls back to GEMINI_API_KEY so both
+ * the new providers and the legacy GeminiProvider can share the same env var.
  */
 export class GoogleClient {
   private static instance: GoogleGenAI;
 
   static getInstance(): GoogleGenAI {
     if (!this.instance) {
-      if (!process.env.GOOGLE_GENAI_API_KEY) {
-        throw new Error('GOOGLE_GENAI_API_KEY is not defined');
+      const apiKey = process.env.GOOGLE_GENAI_API_KEY ?? process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('Neither GOOGLE_GENAI_API_KEY nor GEMINI_API_KEY is defined');
       }
-      this.instance = new GoogleGenAI({
-        apiKey: process.env.GOOGLE_GENAI_API_KEY,
-      });
+      this.instance = new GoogleGenAI({ apiKey });
     }
     return this.instance;
   }

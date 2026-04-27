@@ -550,6 +550,33 @@ export const uploadCourseMaterial = form(
 
 const MAX_EXTRACTED_TEXT_LENGTH = 8000;
 
+/**
+ * MIME types that Gemini can process natively (PDF, plain text variants, etc.).
+ * These are sent directly to the model as file data instead of trying to extract
+ * text with file.text() which fails for binary formats like PDF.
+ */
+const GEMINI_NATIVE_MIME_TYPES = new Set([
+  'application/pdf',
+  'text/plain',
+  'text/html',
+  'text/css',
+  'text/javascript',
+  'application/x-javascript',
+  'text/x-typescript',
+  'application/x-typescript',
+  'text/csv',
+  'text/markdown',
+  'text/xml',
+  'application/xml',
+  'application/rtf',
+]);
+
+function isGeminiNativeType(mimeType: string): boolean {
+  if (GEMINI_NATIVE_MIME_TYPES.has(mimeType)) return true;
+  // Also match text/* broadly
+  return mimeType.startsWith('text/');
+}
+
 async function enrichMaterialWithAI(params: {
   materialId: string;
   courseCode: string;
@@ -567,8 +594,10 @@ async function enrichMaterialWithAI(params: {
       potentialQuestions: string[];
     };
 
+    const fileMimeType = params.file.type || 'application/octet-stream';
+
     if (params.type === 'image') {
-      // Use vision API for images
+      // Images: use vision API (inline base64)
       const arrayBuffer = await params.file.arrayBuffer();
       const base64 = Buffer.from(arrayBuffer).toString('base64');
       const prompt = buildMaterialImagePrompt({
@@ -579,11 +608,33 @@ async function enrichMaterialWithAI(params: {
       const raw = await ai.generateWithVision({
         prompt,
         imageBase64: base64,
-        mimeType: params.file.type,
+        mimeType: fileMimeType,
+      });
+      aiResult = JSON.parse(raw);
+    } else if (params.type !== 'video' && params.type !== 'audio' && isGeminiNativeType(fileMimeType)) {
+      // PDFs and text-type files: pass directly to Gemini — small files use
+      // inline data, large files are uploaded via the Gemini File API.
+      const arrayBuffer = await params.file.arrayBuffer();
+      const prompt = buildMaterialSummaryPrompt({
+        courseCode: params.courseCode,
+        courseTitle: params.courseTitle,
+        title: params.title,
+        type: params.type,
+        extractedText: '', // context comes from the file itself
+      });
+      const raw = await ai.generateWithFile({
+        prompt,
+        fileData: arrayBuffer,
+        mimeType: fileMimeType,
+        fileName: params.file.name || params.title,
+        systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
+        jsonMode: true,
+        maxTokens: 1500,
       });
       aiResult = JSON.parse(raw);
     } else {
-      // Try to extract text from non-binary files; fall back to title-only
+      // Unsupported binary formats (PPTX, DOCX) or video/audio:
+      // try basic text extraction and fall back to title-only context.
       let extractedText = '';
       if (params.type !== 'video' && params.type !== 'audio') {
         try {

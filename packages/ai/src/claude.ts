@@ -21,16 +21,22 @@ export class ClaudeProvider implements AIProvider {
     return (response.content[0] as { text: string }).text;
   }
   
-  async generateWithVision({ prompt, imageBase64, mimeType }: any) {
+  async generateWithFile({ prompt, fileData, mimeType, systemPrompt, jsonMode = false, maxTokens = 1500 }: any): Promise<string> {
+    // Claude supports PDF and plain-text documents as base64 source blocks.
+    const base64 = Buffer.from(fileData as ArrayBuffer).toString('base64');
+
+    const isDocument = mimeType === 'application/pdf' || mimeType.startsWith('text/');
+    const contentBlock: any = isDocument
+      ? { type: 'document', source: { type: 'base64', media_type: mimeType, data: base64 } }
+      : { type: 'text', text: `[File content omitted — unsupported type: ${mimeType}]` };
+
     const response = await this.client.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      max_tokens: maxTokens,
+      system: systemPrompt,
       messages: [{
         role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mimeType as any, data: imageBase64 } },
-          { type: 'text', text: prompt },
-        ],
+        content: [contentBlock, { type: 'text', text: prompt }],
       }],
     });
     return (response.content[0] as { text: string }).text;
