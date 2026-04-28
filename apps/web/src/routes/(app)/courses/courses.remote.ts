@@ -41,6 +41,7 @@ import {
  *    best-effort extraction of the first complete JSON object/array.
  */
 function safeParseJSON(raw: string): any {
+  console.log(raw)
   if (!raw || !raw.trim()) throw new Error('AI returned an empty response');
 
   // Strip markdown fences
@@ -694,7 +695,7 @@ async function enrichMaterialWithAI(params: {
         fileName: params.file.name || params.title,
         systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
         jsonMode: true,
-        maxTokens: 2048,
+        maxTokens: 8192,
       });
       aiResult = safeParseJSON(raw);
     } else {
@@ -720,7 +721,7 @@ async function enrichMaterialWithAI(params: {
         messages: [{ role: 'user', content: prompt }],
         systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
         jsonMode: true,
-        maxTokens: 2048,
+        maxTokens: 8192,
       });
       aiResult = safeParseJSON(raw);
     }
@@ -740,6 +741,7 @@ async function enrichMaterialWithAI(params: {
       .where(eq(courseMaterials.id, params.materialId));
   } catch (err: any) {
     console.error('[AI material enrichment] failed:', err?.message ?? err);
+    console.error('[AI material enrichment] failed:', err);
     await db
       .update(courseMaterials)
       .set({ processingError: String(err?.message ?? 'Unknown error'), processed: false })
@@ -850,7 +852,7 @@ export const generateAIPost = command(GenerateAIPostInput, async (input) => {
     messages: [{ role: 'user', content: prompt }],
     systemPrompt: CONTENT_GENERATION_SYSTEM_PROMPT,
     jsonMode: true,
-    maxTokens: 1500,
+    maxTokens: 8192,
   });
 
   const draft = safeParseJSON(raw);
