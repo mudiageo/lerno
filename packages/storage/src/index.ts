@@ -14,7 +14,7 @@ export const storage: StorageProvider = storageType === 'r2'
       publicUrl:  process.env.R2_PUBLIC_URL!,
     })
   : new LocalProvider({
-      storagePath: process.env.LOCAL_STORAGE_PATH || 'apps/web/static/uploads',
+      storagePath: process.env.LOCAL_STORAGE_PATH || 'static/uploads',
       publicUrl: process.env.LOCAL_PUBLIC_URL || '/uploads',
   });
 
