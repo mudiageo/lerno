@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { useSession } from "$lib/auth.svelte";
+  import { useSession } from "#lib/auth.svelte.js";
   import { getPostById, getComments, createComment, likePost, bookmarkPost, repostPost } from "../../feed/feed.remote";
   import { PostCard } from "@lerno/ui/components/feed";
   import { Button } from "@lerno/ui/components/ui/button";

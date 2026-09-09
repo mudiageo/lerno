@@ -3,7 +3,7 @@
   import { Badge } from "@lerno/ui/components/ui/badge";
   import { Separator } from "@lerno/ui/components/ui/separator";
   import * as Card from "@lerno/ui/components/ui/card";
-  import { useSession } from "$lib/auth.svelte";
+  import { useSession } from "#lib/auth.svelte.js";
   import CreditCard from "@lucide/svelte/icons/credit-card";
   import Zap from "@lucide/svelte/icons/zap";
   import Check from "@lucide/svelte/icons/check";

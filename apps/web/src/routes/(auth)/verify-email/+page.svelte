@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { authClient } from "$lib/auth.svelte";
+  import { authClient } from "#lib/auth.svelte.js";
 
   let success = $state(false);
   let error = $state("");

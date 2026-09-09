@@ -5,7 +5,7 @@
   import { Input } from "@lerno/ui/components/ui/input";
   import { Label } from "@lerno/ui/components/ui/label";
   import { toast } from "@lerno/ui/components/ui/sonner";
-  import { browser } from "$app/environment";
+  import { browser } from '$app/env';
   import Video from "@lucide/svelte/icons/video";
   import Loader2 from "@lucide/svelte/icons/loader-2";
   import { goto } from "$app/navigation";

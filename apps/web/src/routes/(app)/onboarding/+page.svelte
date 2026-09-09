@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { useSession } from "$lib/auth.svelte";
+  import { useSession } from "#lib/auth.svelte.js";
   import { completeOnboarding } from "./onboarding.remote";
 
   const session = useSession();

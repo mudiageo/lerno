@@ -10,7 +10,7 @@
   import BrainCircuit from "@lucide/svelte/icons/brain-circuit";
   import Clock from "@lucide/svelte/icons/clock";
   import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
-  import { useSession } from "$lib/auth.svelte";
+  import { useSession } from "#lib/auth.svelte.js";
   import { Button } from "@lerno/ui/components/ui/button";
   import { Skeleton } from "@lerno/ui/components/ui/skeleton";
   import Loader2 from "@lucide/svelte/icons/loader-2";

@@ -3,13 +3,14 @@ import { db } from '@lerno/db';
 import { streams, users, userCourses } from '@lerno/db/schema';
 import { desc, eq, and } from '@lerno/db/drizzle';
 import * as v from 'valibot';
-import { env } from '$env/dynamic/private';
+import { LIVEKIT_API_KEY, LIVEKIT_API_SECRET, LIVEKIT_URL } from '$app/env/private';
 
 // In a real app these come from env config
 // We mock connection details unless overridden
-const LIVEKIT_API_KEY = env.LIVEKIT_API_KEY || 'devkey';
-const LIVEKIT_API_SECRET = env.LIVEKIT_API_SECRET || 'secret';
-const LIVEKIT_URL = env.LIVEKIT_URL || 'wss://localhost:7880';
+const LIVEKIT_API_KEY = LIVEKIT_API_KEY || 'devkey';
+
+const LIVEKIT_API_SECRET = LIVEKIT_API_SECRET || 'secret';
+const LIVEKIT_URL = LIVEKIT_URL || 'wss://localhost:7880';
 
 // We dynamically import livekit to prevent breaking dev builds if it isn't fully installed yet
 let AccessToken: any;
@@ -17,7 +18,7 @@ try {
   const lk = await import('livekit-server-sdk');
   AccessToken = lk.AccessToken;
 } catch (e) {
-  console.warn("LiveKit Server SDK not fully loaded. Falling back to mock.");
+  console.warn('LiveKit Server SDK not fully loaded. Falling back to mock.');
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -80,16 +81,19 @@ export const startLiveStream = command(StartStreamInput, async (input) => {
   const roomId = crypto.randomUUID();
 
   // Update or insert stream in DB
-  const [stream] = await db.insert(streams).values({
-    hostId: userId,
-    title: input.title,
-    description: input.description,
-    courseId: input.courseId,
-    roomId,
-    status: 'live',
-    provider: 'livekit',
-    startedAt: new Date(),
-  }).returning({ id: streams.id });
+  const [stream] = await db
+    .insert(streams)
+    .values({
+      hostId: userId,
+      title: input.title,
+      description: input.description,
+      courseId: input.courseId,
+      roomId,
+      status: 'live',
+      provider: 'livekit',
+      startedAt: new Date(),
+    })
+    .returning({ id: streams.id });
 
   // Generate LiveKit Host token
   let token = 'mock_host_token';
@@ -98,7 +102,14 @@ export const startLiveStream = command(StartStreamInput, async (input) => {
       identity: userId,
       name: username,
     });
-    at.addGrant({ roomJoin: true, room: roomId, canPublish: true, canSubscribe: true });
+
+    at.addGrant({
+      roomJoin: true,
+      room: roomId,
+      canPublish: true,
+      canSubscribe: true,
+    });
+
     token = await at.toJwt();
   }
 
@@ -113,7 +124,11 @@ export const joinLiveStream = command(JoinStreamInput, async ({ streamId }) => {
   const username = event.locals?.user?.email?.split('@')[0] ?? 'Viewer';
   if (!userId) throw new Error('Not authenticated');
 
-  const [stream] = await db.select({ roomId: streams.roomId }).from(streams).where(eq(streams.id, streamId)).limit(1);
+  const [stream] = await db
+    .select({ roomId: streams.roomId })
+    .from(streams)
+    .where(eq(streams.id, streamId))
+    .limit(1);
   if (!stream) throw new Error('Stream not found');
 
   let token = 'mock_viewer_token';
@@ -122,7 +137,14 @@ export const joinLiveStream = command(JoinStreamInput, async ({ streamId }) => {
       identity: userId,
       name: username,
     });
-    at.addGrant({ roomJoin: true, room: stream.roomId, canPublish: false, canSubscribe: true });
+
+    at.addGrant({
+      roomJoin: true,
+      room: stream.roomId,
+      canPublish: false,
+      canSubscribe: true,
+    });
+
     token = await at.toJwt();
   }
 
@@ -135,10 +157,17 @@ export const endLiveStream = command(v.object({ streamId: v.string() }), async (
   if (!userId) throw new Error('Not authenticated');
 
   // Verify host
-  const [stream] = await db.select({ hostId: streams.hostId }).from(streams).where(eq(streams.id, streamId)).limit(1);
+  const [stream] = await db
+    .select({ hostId: streams.hostId })
+    .from(streams)
+    .where(eq(streams.id, streamId))
+    .limit(1);
   if (stream?.hostId !== userId) throw new Error('Not authorized');
 
-  await db.update(streams).set({ status: 'ended', endedAt: new Date() }).where(eq(streams.id, streamId));
+  await db
+    .update(streams)
+    .set({ status: 'ended', endedAt: new Date() })
+    .where(eq(streams.id, streamId));
 
   return { success: true };
 });

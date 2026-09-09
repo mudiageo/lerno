@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { signUp, signIn } from '$lib/auth.svelte';
+  import { signUp, signIn } from '#lib/auth.svelte.js';
 
   let name = $state('');
   let email = $state('');

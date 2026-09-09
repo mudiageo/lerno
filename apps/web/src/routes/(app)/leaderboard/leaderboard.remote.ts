@@ -18,21 +18,21 @@ export const getLeaderboard = query(
         .select({ id: follows.followingId })
         .from(follows)
         .where(eq(follows.followerId as any, userId));
-      
+
       ids = [userId, ...friendIds.map((f: any) => f.id)];
     } else if (scope === 'course') {
       const myCourses = await (db as any)
         .select({ code: userCourses.code })
         .from(userCourses)
         .where(eq(userCourses.userId as any, userId));
-      
+
       const codes = myCourses.map((c: any) => c.code);
       if (codes.length > 0) {
         const studentIds = await (db as any)
           .select({ userId: userCourses.userId })
           .from(userCourses)
           .where(inArray(userCourses.code as any, codes));
-        
+
         ids = [...new Set(studentIds.map((s: any) => s.userId))];
       } else {
         ids = [userId];
@@ -68,14 +68,14 @@ export const getUserStats = query(v.object({}), async () => {
   if (!userId) throw new Error('Not authenticated');
 
   const [user] = await (db as any)
-    .select({ 
-      xp: users.xp, 
-      streakDays: users.streakDays, 
+    .select({
+      xp: users.xp,
+      streakDays: users.streakDays,
       plan: users.plan,
       displayName: users.displayName,
       username: users.username,
       avatarUrl: users.avatarUrl,
-      id: users.id
+      id: users.id,
     })
     .from(users)
     .where(eq(users.id as any, userId))

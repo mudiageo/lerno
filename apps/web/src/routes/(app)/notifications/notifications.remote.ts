@@ -41,7 +41,8 @@ export const markAllRead = command(v.object({}), async () => {
   const userId = event.locals?.user?.id;
   if (!userId) throw new Error('Not authenticated');
 
-  await (db as any).update(notifications)
+  await (db as any)
+    .update(notifications)
     .set({ read: true })
     .where(and(eq(notifications.userId as any, userId), eq(notifications.read as any, false)));
 
@@ -53,7 +54,8 @@ export const markOneRead = command(v.object({ id: v.string() }), async ({ id }) 
   const userId = event.locals?.user?.id;
   if (!userId) throw new Error('Not authenticated');
 
-  await (db as any).update(notifications)
+  await (db as any)
+    .update(notifications)
     .set({ read: true })
     .where(and(eq(notifications.userId as any, userId), eq(notifications.id as any, id)));
 

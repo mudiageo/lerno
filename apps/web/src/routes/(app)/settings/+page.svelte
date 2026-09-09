@@ -3,7 +3,7 @@
   import { Separator } from "@lerno/ui/components/ui/separator";
   import * as Avatar from "@lerno/ui/components/ui/avatar";
   import { Badge } from "@lerno/ui/components/ui/badge";
-  import { useSession } from "$lib/auth.svelte";
+  import { useSession } from "#lib/auth.svelte.js";
   import HelpCircle from "@lucide/svelte/icons/help-circle";
   import User from "@lucide/svelte/icons/user";
   import Bell from "@lucide/svelte/icons/bell";
@@ -14,7 +14,7 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import LogOut from "@lucide/svelte/icons/log-out";
   import { goto } from "$app/navigation";
-  import { authClient } from "$lib/auth.svelte";
+  import { authClient } from "#lib/auth.svelte.js";
 
   const getSession = useSession();
   const session = $derived($getSession);

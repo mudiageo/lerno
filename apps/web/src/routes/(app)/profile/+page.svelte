@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { useSession } from "$lib/auth.svelte";
+  import { useSession } from "#lib/auth.svelte.js";
   import { getProfile, getProfilePosts, toggleFollow } from "./profile.remote";
   import * as Avatar from "@lerno/ui/components/ui/avatar";
   import { Badge } from "@lerno/ui/components/ui/badge";

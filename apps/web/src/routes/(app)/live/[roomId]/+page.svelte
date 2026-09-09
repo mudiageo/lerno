@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { joinLiveStream, getStreamDetails } from "../live.remote";
-  import { browser } from "$app/environment";
+  import { browser } from '$app/env';
   import { Skeleton } from "@lerno/ui/components/ui/skeleton";
   import { Button } from "@lerno/ui/components/ui/button";
   import Video from "@lucide/svelte/icons/video";
