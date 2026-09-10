@@ -18,7 +18,7 @@ export const variables = defineEnvVars({
     description: 'LiveKit Server URL',
   },
   ORIGIN: {
-    schema: building ? v.optional(v.pipe(v.string(), v.url()), '') : v.pipe(v.string(), v.url()),
+    schema: building ? v.optional(v.string(), '') : v.pipe(v.string(), v.url()),
     description: 'The public-facing origin of the application',
   },
   BETTER_AUTH_SECRET: {
