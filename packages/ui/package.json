@@ -15,21 +15,25 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "development": "./src/lib/index.ts",
       "types": "./dist/index.d.ts",
       "svelte": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./components/*": {
+      "development": "./src/lib/components/*/index.ts",
       "types": "./dist/components/*/index.d.ts",
       "svelte": "./dist/components/*/index.js",
       "default": "./dist/components/*/index.js"
     },
     "./utils.ts": {
+      "development": "./src/lib/utils.ts",
       "types": "./dist/utils.d.ts",
       "svelte": "./dist/utils.js",
       "default": "./dist/utils.js"
     },
     "./constants/*": {
+      "development": "./src/lib/constants/*.ts",
       "types": "./dist/constants/*.d.ts",
       "svelte": "./dist/constants/*.js",
       "default": "./dist/constants/*.js"

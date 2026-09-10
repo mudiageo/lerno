@@ -59,11 +59,9 @@ peerDependencyRules:
   allowedVersions:
     vite: '*'
     vitest: '*'
-onlyBuiltDependencies:
-  - esbuild
 allowBuilds:
-  '@prisma/client': set this to true or false
-  better-sqlite3: set this to true or false
-  esbuild: set this to true or false
-  protobufjs: set this to true or false
-  workerd: set this to true or false
+  '@prisma/client': true
+  better-sqlite3: true
+  esbuild: true
+  protobufjs: true
+  workerd: true
