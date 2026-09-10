@@ -4,22 +4,7 @@ import { streams, users, userCourses } from '@lerno/db/schema';
 import { desc, eq, and } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 import { LIVEKIT_API_KEY, LIVEKIT_API_SECRET, LIVEKIT_URL } from '$app/env/private';
-
-// In a real app these come from env config
-// We mock connection details unless overridden
-const LIVEKIT_API_KEY = LIVEKIT_API_KEY || 'devkey';
-
-const LIVEKIT_API_SECRET = LIVEKIT_API_SECRET || 'secret';
-const LIVEKIT_URL = LIVEKIT_URL || 'wss://localhost:7880';
-
-// We dynamically import livekit to prevent breaking dev builds if it isn't fully installed yet
-let AccessToken: any;
-try {
-  const lk = await import('livekit-server-sdk');
-  AccessToken = lk.AccessToken;
-} catch (e) {
-  console.warn('LiveKit Server SDK not fully loaded. Falling back to mock.');
-}
+import { AccessToken } from 'livekit-server-sdk';
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 

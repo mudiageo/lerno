@@ -2,17 +2,19 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 import { building } from '$app/env';
 import * as v from 'valibot';
 
+const value = (v: string | Promise<string>) => v.pipeAsync(v.unknown(), v.transformAsync(() => v));
+
 export const variables = defineEnvVars({
   LIVEKIT_API_KEY: {
-    schema: building ? v.optional(v.string(), '') : v.string(),
+    schema: v.optional(v.string(), 'devkey'),
     description: 'API Key for LiveKit',
   },
   LIVEKIT_API_SECRET: {
-    schema: building ? v.optional(v.string(), '') : v.string(),
+    schema: v.optional(v.string(), 'secret'),
     description: 'API Secret for LiveKit',
   },
   LIVEKIT_URL: {
-    schema: building ? v.optional(v.pipe(v.string(), v.url()), '') : v.pipe(v.string(), v.url()),
+    schema: v.optional(v.string(), 'wss://localhost:7880'),
     description: 'LiveKit Server URL',
   },
   ORIGIN: {
