@@ -15,11 +15,11 @@ export const XP_LEVELS = [
 export type XpLevel = (typeof XP_LEVELS)[number];
 
 export function getXpLevel(xp: number): XpLevel {
-  return [...XP_LEVELS].reverse().find(l => l.xp <= xp) ?? XP_LEVELS[0];
+  return [...XP_LEVELS].reverse().find((l) => l.xp <= xp) ?? XP_LEVELS[0];
 }
 
 export function getNextXpLevel(xp: number): XpLevel | undefined {
-  return XP_LEVELS.find(l => l.xp > xp);
+  return XP_LEVELS.find((l) => l.xp > xp);
 }
 
 export function getXpProgress(xp: number): number {

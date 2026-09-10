@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Skeleton } from '$lib/components/ui/skeleton';
+  import { Skeleton } from '#lib/components/ui/skeleton/index.js';
 </script>
 
 <div class="px-4 py-3 border-b border-border">

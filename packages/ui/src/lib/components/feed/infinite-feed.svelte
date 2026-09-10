@@ -1,7 +1,7 @@
 <script lang="ts">
   import PostCard from "./post-card.svelte";
   import PostSkeleton from "./post-skeleton.svelte";
-  import { Spinner } from "$lib/components/ui/spinner";
+  import { Spinner } from "#lib/components/ui/spinner/index.js";
 
   let {
     posts = [],

@@ -3,12 +3,12 @@
   import Award from '@lucide/svelte/icons/award';
   import BookOpen from '@lucide/svelte/icons/book-open';
   import TrendingUp from '@lucide/svelte/icons/trending-up';
-  import { Separator } from '$lib/components/ui/separator';
-  import { Badge } from '$lib/components/ui/badge';
-  import { Progress } from '$lib/components/ui/progress';
-  import * as Card from '$lib/components/ui/card';
-  import * as Avatar from '$lib/components/ui/avatar';
-  import { getXpLevel, getNextXpLevel, getXpProgress } from '$lib/constants/xp';
+  import { Separator } from '#lib/components/ui/separator/index.js';
+  import { Badge } from '#lib/components/ui/badge/index.js';
+  import { Progress } from '#lib/components/ui/progress/index.js';
+  import * as Card from '#lib/components/ui/card/index.js';
+  import * as Avatar from '#lib/components/ui/avatar/index.js';
+  import { getXpLevel, getNextXpLevel, getXpProgress } from '#lib/constants/xp.js';
 
   let { user }: { user?: any } = $props();
 

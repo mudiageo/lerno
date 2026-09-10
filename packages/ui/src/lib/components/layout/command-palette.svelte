@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import * as Command from '$lib/components/ui/command';
+  import * as Command from '#lib/components/ui/command/index.js';
   import BookOpen from '@lucide/svelte/icons/book-open';
   import Zap from '@lucide/svelte/icons/zap';
   import FileText from '@lucide/svelte/icons/file-text';

@@ -12,6 +12,7 @@ This package contains the shared UI components and design system for Lerno, buil
 ## 🏗️ Structure
 
 Components are organized in [src/lib/components/](./src/lib/components/):
+
 - `ui/`: Fundamental atoms (Button, Card, Input).
 - `layout/`: Shell components (Sidebar, TopNav, BottomNav).
 - `feed/`: Social and post-related cards.
@@ -26,4 +27,5 @@ Components are organized in [src/lib/components/](./src/lib/components/):
 - **Lucide Alignment**: Ensure icons are properly sized using the `size` prop or Tailwind `w-X h-X` classes.
 
 ## 🧪 Testing
+
 Run `vp test` to execute component unit tests.

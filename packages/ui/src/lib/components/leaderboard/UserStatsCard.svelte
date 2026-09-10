@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as Avatar from "$lib/components/ui/avatar/index.js";
-  import { Progress } from "$lib/components/ui/progress/index.js";
-  import { cn } from "$lib/utils.js";
+  import * as Avatar from "#lib/components/ui/avatar/index.js";
+  import { Progress } from "#lib/components/ui/progress/index.js";
+  import { cn } from "#lib/utils.js";
   import Trophy from "@lucide/svelte/icons/trophy";
   import Flame from "@lucide/svelte/icons/flame";
   import TrendingUp from "@lucide/svelte/icons/trending-up";

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import * as AspectRatio from "$lib/components/ui/aspect-ratio";
-  import * as Avatar from "$lib/components/ui/avatar";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Skeleton } from "$lib/components/ui/skeleton";
+  import * as AspectRatio from "#lib/components/ui/aspect-ratio/index.js";
+  import * as Avatar from "#lib/components/ui/avatar/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { Skeleton } from "#lib/components/ui/skeleton/index.js";
   import Play from "@lucide/svelte/icons/play";
 
   let {

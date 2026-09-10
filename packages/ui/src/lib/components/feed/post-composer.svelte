@@ -7,16 +7,16 @@
   import Plus from '@lucide/svelte/icons/plus';
   import Trash2 from '@lucide/svelte/icons/trash-2';
   import Globe from '@lucide/svelte/icons/globe';
-  import * as Avatar from '$lib/components/ui/avatar';
-  import { Button } from '$lib/components/ui/button';
-  import { Input } from '$lib/components/ui/input';
-  import { Textarea } from '$lib/components/ui/textarea';
-  import * as Tabs from '$lib/components/ui/tabs';
-  import { Badge } from '$lib/components/ui/badge';
-  import { Separator } from '$lib/components/ui/separator';
-  import * as Tooltip from '$lib/components/ui/tooltip';
-  import * as RadioGroup from '$lib/components/ui/radio-group';
-  import { Label } from '$lib/components/ui/label';
+  import * as Avatar from '#lib/components/ui/avatar/index.js';
+  import { Button } from '#lib/components/ui/button/index.js';
+  import { Input } from '#lib/components/ui/input/index.js';
+  import { Textarea } from '#lib/components/ui/textarea/index.js';
+  import * as Tabs from '#lib/components/ui/tabs/index.js';
+  import { Badge } from '#lib/components/ui/badge/index.js';
+  import { Separator } from '#lib/components/ui/separator/index.js';
+  import * as Tooltip from '#lib/components/ui/tooltip/index.js';
+  import * as RadioGroup from '#lib/components/ui/radio-group/index.js';
+  import { Label } from '#lib/components/ui/label/index.js';
 
   let { user, onPost }: {
     user?: any;

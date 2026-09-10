@@ -10,11 +10,11 @@
   import PenSquare from "@lucide/svelte/icons/pen-square";
   import Settings from "@lucide/svelte/icons/settings";
   import HelpCircle from "@lucide/svelte/icons/help-circle";
-  import * as Avatar from "$lib/components/ui/avatar";
-  import * as Tooltip from "$lib/components/ui/tooltip";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Separator } from "$lib/components/ui/separator";
+  import * as Avatar from "#lib/components/ui/avatar/index.js";
+  import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { Separator } from "#lib/components/ui/separator/index.js";
   import Clapperboard from "@lucide/svelte/icons/clapperboard";
 
   let { user, onCompose }: { user?: any; onCompose?: () => void } = $props();

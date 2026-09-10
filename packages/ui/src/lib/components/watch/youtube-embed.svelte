@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as AspectRatio from "$lib/components/ui/aspect-ratio";
+  import * as AspectRatio from "#lib/components/ui/aspect-ratio/index.js";
   import Play from "@lucide/svelte/icons/play";
   import { fade } from "svelte/transition";
 

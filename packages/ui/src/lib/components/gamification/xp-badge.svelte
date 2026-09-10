@@ -1,9 +1,9 @@
 <script lang="ts">
   import Flame from '@lucide/svelte/icons/flame';
-  import { Progress } from '$lib/components/ui/progress';
-  import { Badge } from '$lib/components/ui/badge';
-  import * as Tooltip from '$lib/components/ui/tooltip';
-  import { getXpLevel, getNextXpLevel, getXpProgress } from '$lib/constants/xp';
+  import { Progress } from '#lib/components/ui/progress/index.js';
+  import { Badge } from '#lib/components/ui/badge/index.js';
+  import * as Tooltip from '#lib/components/ui/tooltip/index.js';
+  import { getXpLevel, getNextXpLevel, getXpProgress } from '#lib/constants/xp.js';
 
   let { xp = 0, streak = 0 }: { xp?: number; streak?: number } = $props();
 

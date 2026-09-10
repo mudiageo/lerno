@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
   import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import { fade, slide } from "svelte/transition";
