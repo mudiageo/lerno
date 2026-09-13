@@ -1,5 +1,5 @@
 import PgBoss from 'pg-boss';
-import 'dotenv/config';
+
 
 async function trigger() {
   const queue = process.argv[2];

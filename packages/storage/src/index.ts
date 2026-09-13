@@ -1,7 +1,7 @@
 import { type StorageProvider } from './provider';
 import { R2Provider } from './r2';
 import { LocalProvider } from './local';
-import 'dotenv/config';
+
 
 const storageType = process.env.STORAGE_TYPE || 'local';
 

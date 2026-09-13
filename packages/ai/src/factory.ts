@@ -16,7 +16,7 @@ import { SimulatedTtsProvider } from './providers/simulated/tts';
 import { SimulatedAudioProvider } from './providers/simulated/audio';
 import { SimulatedVideoGenerator } from './providers/simulated/video';
 
-import 'dotenv/config';
+
 
 export class ProviderFactory {
   static getLlmProvider(type?: string): LlmProvider {

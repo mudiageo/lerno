@@ -1,7 +1,7 @@
 import { type AIProvider } from './provider';
 import { GeminiProvider } from './gemini';
 import { ClaudeProvider } from './claude';
-import 'dotenv/config';
+
 
 export function createAIProvider(): AIProvider {
   const primary = new GeminiProvider(process.env.GEMINI_API_KEY!);
