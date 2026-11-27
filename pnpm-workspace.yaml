@@ -40,7 +40,7 @@ catalog:
   vaul-svelte: 1.0.0-next.7
   vite: npm:@voidzero-dev/vite-plus-core@8.3.8001
   vite-plus: 1.8.0
-  wrangler: ^4.130.0
+  wrangler: ^4.168.0
 
 catalogMode: prefer
 

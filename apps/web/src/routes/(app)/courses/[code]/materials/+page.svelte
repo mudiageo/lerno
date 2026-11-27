@@ -1,255 +1,279 @@
 <script lang="ts">
-  import { page } from "$app/state";
-  import { getCourseMaterials, uploadCourseMaterial } from "../../courses.remote";
-  import { Button } from "@lerno/ui/components/ui/button";
-  import { Badge } from "@lerno/ui/components/ui/badge";
-  import { Skeleton } from "@lerno/ui/components/ui/skeleton";
-  import { toast } from "@lerno/ui/components/ui/sonner";
-  import { Input } from "@lerno/ui/components/ui/input";
-  import { Label } from "@lerno/ui/components/ui/label";
-  import * as Dialog from "@lerno/ui/components/ui/dialog";
-  import FileText from "@lucide/svelte/icons/file-text";
-  import FileImage from "@lucide/svelte/icons/file-image";
-  import Film from "@lucide/svelte/icons/film";
-  import Music from "@lucide/svelte/icons/music";
-  import Upload from "@lucide/svelte/icons/upload";
-  import Download from "@lucide/svelte/icons/download";
-  import Trash2 from "@lucide/svelte/icons/trash-2";
-  import Brain from "@lucide/svelte/icons/brain";
-  import Plus from "@lucide/svelte/icons/plus";
-  import FolderOpen from "@lucide/svelte/icons/folder-open";
+	import { page } from '$app/state';
+	import { getCourseMaterials, uploadCourseMaterial } from '../../courses.remote';
+	import { Button } from '@lerno/ui/components/ui/button';
+	import { Badge } from '@lerno/ui/components/ui/badge';
+	import { Skeleton } from '@lerno/ui/components/ui/skeleton';
+	import { toast } from '@lerno/ui/components/ui/sonner';
+	import { Input } from '@lerno/ui/components/ui/input';
+	import { Label } from '@lerno/ui/components/ui/label';
+	import * as Dialog from '@lerno/ui/components/ui/dialog';
+	import FileText from '@lucide/svelte/icons/file-text';
+	import FileImage from '@lucide/svelte/icons/file-image';
+	import Film from '@lucide/svelte/icons/film';
+	import Music from '@lucide/svelte/icons/music';
+	import Upload from '@lucide/svelte/icons/upload';
+	import Download from '@lucide/svelte/icons/download';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Brain from '@lucide/svelte/icons/brain';
+	import Plus from '@lucide/svelte/icons/plus';
+	import FolderOpen from '@lucide/svelte/icons/folder-open';
 
-  let materials = await getCourseMaterials({ courseCode: page.params.code });
+	let materials = await getCourseMaterials({ courseCode: page.params.code });
 
-  let uploadOpen = $state(false);
-  let uploading = $state(false);
-  let dragOver = $state(false);
-  
-  const { courseCode, title, file } = uploadCourseMaterial.fields
+	let uploadOpen = $state(false);
+	let uploading = $state(false);
+	let dragOver = $state(false);
 
+	const { courseCode, title, file } = uploadCourseMaterial.fields;
 
-  const typeIcons: Record<string, any> = {
-    pdf: FileText, slide: FileText, note: FileText,
-    image: FileImage, video: Film, audio: Music, other: FileText,
-  };
+	const typeIcons: Record<string, any> = {
+		pdf: FileText,
+		slide: FileText,
+		note: FileText,
+		image: FileImage,
+		video: Film,
+		audio: Music,
+		other: FileText
+	};
 
-  const typeColors: Record<string, string> = {
-    pdf: "text-red-500 bg-red-50 dark:bg-red-950/30",
-    slide: "text-orange-500 bg-orange-50 dark:bg-orange-950/30",
-    note: "text-blue-500 bg-blue-50 dark:bg-blue-950/30",
-    image: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30",
-    video: "text-purple-500 bg-purple-50 dark:bg-purple-950/30",
-    audio: "text-pink-500 bg-pink-50 dark:bg-pink-950/30",
-    other: "text-muted-foreground bg-muted",
-  };
+	const typeColors: Record<string, string> = {
+		pdf: 'text-red-500 bg-red-50 dark:bg-red-950/30',
+		slide: 'text-orange-500 bg-orange-50 dark:bg-orange-950/30',
+		note: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30',
+		image: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30',
+		video: 'text-purple-500 bg-purple-50 dark:bg-purple-950/30',
+		audio: 'text-pink-500 bg-pink-50 dark:bg-pink-950/30',
+		other: 'text-muted-foreground bg-muted'
+	};
 
-  function onFileInput(e: Event) {
-    const input = e.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    if (!title.value()) title.set(file.name.replace(/\.[^/.]+$/, ""));
-  }
+	function onFileInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		if (!title.value()) title.set(file.name.replace(/\.[^/.]+$/, ''));
+	}
 
-  function onDrop(e: DragEvent) {
-    e.preventDefault();
-    dragOver = false;
-    const file = e.dataTransfer?.files?.[0];
-    if (!file) return;
-    uploadCourseMaterial.fields.file.set(file); 
-    if (!title.value()) title.set(file.name.replace(/\.[^/.]+$/, "")); 
-  }
+	function onDrop(e: DragEvent) {
+		e.preventDefault();
+		dragOver = false;
+		const file = e.dataTransfer?.files?.[0];
+		if (!file) return;
+		uploadCourseMaterial.fields.file.set(file);
+		if (!title.value()) title.set(file.name.replace(/\.[^/.]+$/, ''));
+	}
 
-  
+	function formatSize(bytes: number) {
+		if (!bytes) return '';
+		if (bytes < 1024) return `${bytes}B`;
+		if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)}KB`;
+		return `${(bytes / 1048576).toFixed(1)}MB`;
+	}
 
-  function formatSize(bytes: number) {
-    if (!bytes) return "";
-    if (bytes < 1024) return `${bytes}B`;
-    if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)}KB`;
-    return `${(bytes / 1048576).toFixed(1)}MB`;
-  }
-
-  function timeAgo(iso: string) {
-    const diff = Date.now() - new Date(iso).getTime();
-    const d = Math.floor(diff / 86400000);
-    if (d === 0) return "Today";
-    if (d === 1) return "Yesterday";
-    return `${d}d ago`;
-  }
+	function timeAgo(iso: string) {
+		const diff = Date.now() - new Date(iso).getTime();
+		const d = Math.floor(diff / 86400000);
+		if (d === 0) return 'Today';
+		if (d === 1) return 'Yesterday';
+		return `${d}d ago`;
+	}
 </script>
 
-<div class="px-4 py-5 space-y-4">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <h2 class="text-base font-bold text-foreground flex items-center gap-2">
-      <FolderOpen class="size-4 text-brand-500" />
-      Course Materials
-    </h2>
-    <Button size="sm" class="h-8 text-xs gap-1.5" onclick={() => (uploadOpen = true)}>
-      <Upload class="size-3.5" />
-      Upload
-    </Button>
-  </div>
+<div class="space-y-4 px-4 py-5">
+	<!-- Header -->
+	<div class="flex items-center justify-between">
+		<h2 class="flex items-center gap-2 text-base font-bold text-foreground">
+			<FolderOpen class="size-4 text-brand-500" />
+			Course Materials
+		</h2>
+		<Button size="sm" class="h-8 gap-1.5 text-xs" onclick={() => (uploadOpen = true)}>
+			<Upload class="size-3.5" />
+			Upload
+		</Button>
+	</div>
 
-  <!-- Materials list -->
-  {#if materials.length === 0}
-    <!-- Drag-drop empty state -->
-    <div
-      class="flex flex-col items-center gap-4 py-16 text-center rounded-2xl border-2 border-dashed transition-colors
+	<!-- Materials list -->
+	{#if materials.length === 0}
+		<!-- Drag-drop empty state -->
+		<div
+			class="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed py-16 text-center transition-colors
              {dragOver ? 'border-brand-500 bg-brand-50/30 dark:bg-brand-950/10' : 'border-border'}"
-      role="region"
-      aria-label="Drop files here"
-      ondragover={(e) => { e.preventDefault(); dragOver = true; }}
-      ondragleave={() => (dragOver = false)}
-      ondrop={onDrop}
-    >
-      <div class="size-14 rounded-2xl bg-muted flex items-center justify-center">
-        <FolderOpen class="size-7 text-muted-foreground/40" />
-      </div>
-      <div>
-        <p class="text-sm font-medium text-foreground">No materials yet</p>
-        <p class="text-xs text-muted-foreground mt-1">Drop files here or click Upload to add PDFs, slides, notes.</p>
-      </div>
-      <Button size="sm" onclick={() => (uploadOpen = true)} class="gap-1.5">
-        <Upload class="size-3.5" /> Upload Material
-      </Button>
-    </div>
-  {:else}
-    <!-- Drop zone hint when files exist -->
-    <div
-      class="hidden sm:flex items-center gap-2 p-3 rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground transition-colors
-             {dragOver ? 'border-brand-500 bg-brand-50/30 dark:bg-brand-950/10 text-brand-500' : ''}"
-      ondragover={(e) => { e.preventDefault(); dragOver = true; }}
-      ondragleave={() => (dragOver = false)}
-      ondrop={onDrop}
-    >
-      <Upload class="size-3.5 shrink-0" />
-      Drop a file here to upload
-    </div>
+			role="region"
+			aria-label="Drop files here"
+			ondragover={(e) => {
+				e.preventDefault();
+				dragOver = true;
+			}}
+			ondragleave={() => (dragOver = false)}
+			ondrop={onDrop}
+		>
+			<div class="flex size-14 items-center justify-center rounded-2xl bg-muted">
+				<FolderOpen class="size-7 text-muted-foreground/40" />
+			</div>
+			<div>
+				<p class="text-sm font-medium text-foreground">No materials yet</p>
+				<p class="mt-1 text-xs text-muted-foreground">
+					Drop files here or click Upload to add PDFs, slides, notes.
+				</p>
+			</div>
+			<Button size="sm" onclick={() => (uploadOpen = true)} class="gap-1.5">
+				<Upload class="size-3.5" /> Upload Material
+			</Button>
+		</div>
+	{:else}
+		<!-- Drop zone hint when files exist -->
+		<div
+			class="hidden items-center gap-2 rounded-xl border border-dashed border-border/60 p-3 text-xs text-muted-foreground transition-colors sm:flex
+             {dragOver
+				? 'border-brand-500 bg-brand-50/30 text-brand-500 dark:bg-brand-950/10'
+				: ''}"
+			ondragover={(e) => {
+				e.preventDefault();
+				dragOver = true;
+			}}
+			ondragleave={() => (dragOver = false)}
+			ondrop={onDrop}
+		>
+			<Upload class="size-3.5 shrink-0" />
+			Drop a file here to upload
+		</div>
 
-    <div class="space-y-2">
-      {#each materials as material (material.id)}
-        {@const Icon = typeIcons[material.type] ?? FileText}
-        <div class="flex items-center gap-3 p-3.5 rounded-xl border border-border/70 bg-card hover:bg-accent/30 transition-colors group">
-          <div class="size-10 rounded-xl {typeColors[material.type] ?? typeColors.other} flex items-center justify-center shrink-0">
-            <Icon class="size-5" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-foreground truncate">{material.title}</p>
-            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
-              <Badge variant="outline" class="text-[10px] h-4 px-1.5">{material.type.toUpperCase()}</Badge>
-              <span>{timeAgo(material.createdAt)}</span>
-              {#if material.processed}
-                <span class="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-0.5">
-                  <Brain class="size-3" /> AI processed
-                </span>
-              {/if}
-            </div>
-          </div>
-          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {#if material.url || material.storageKey}
-              <a
-                href={material.url ?? `/api/materials/${material.id}/download`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              >
-                <Download class="size-4" />
-              </a>
-            {/if}
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
+		<div class="space-y-2">
+			{#each materials as material (material.id)}
+				{@const Icon = typeIcons[material.type] ?? FileText}
+				<div
+					class="group flex items-center gap-3 rounded-xl border border-border/70 bg-card p-3.5 transition-colors hover:bg-accent/30"
+				>
+					<div
+						class="size-10 rounded-xl {typeColors[material.type] ??
+							typeColors.other} flex shrink-0 items-center justify-center"
+					>
+						<Icon class="size-5" />
+					</div>
+					<div class="min-w-0 flex-1">
+						<p class="truncate text-sm font-medium text-foreground">{material.title}</p>
+						<div class="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+							<Badge variant="outline" class="h-4 px-1.5 text-[10px]"
+								>{material.type.toUpperCase()}</Badge
+							>
+							<span>{timeAgo(material.createdAt)}</span>
+							{#if material.processed}
+								<span
+									class="flex items-center gap-0.5 font-medium text-emerald-600 dark:text-emerald-400"
+								>
+									<Brain class="size-3" /> AI processed
+								</span>
+							{/if}
+						</div>
+					</div>
+					<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+						{#if material.url || material.storageKey}
+							<a
+								href={material.url ?? `/api/materials/${material.id}/download`}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+							>
+								<Download class="size-4" />
+							</a>
+						{/if}
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <!-- Upload Dialog -->
 <Dialog.Root bind:open={uploadOpen}>
-  <Dialog.Content class="max-w-sm">
-    <Dialog.Header>
-      <Dialog.Title class="flex items-center gap-2">
-        <Upload class="size-4" />
-        Upload Material
-      </Dialog.Title>
-    </Dialog.Header>
-    
-    <form {...uploadCourseMaterial.enhance(async ({ form, data, submit }) => {
-    
-    if (!data.file || !data.title) { toast.error("Select a file and add a title"); return; }
-        
-    uploading = true;
-    try {
-      
-      if (await submit()) {
-			  form.reset();
+	<Dialog.Content class="max-w-sm">
+		<Dialog.Header>
+			<Dialog.Title class="flex items-center gap-2">
+				<Upload class="size-4" />
+				Upload Material
+			</Dialog.Title>
+		</Dialog.Header>
 
-  			toast.success("Uploaded successfully");
-        
-        uploadOpen = false;
-        
-  		} else {
-  			toast.error('Invalid form data!');
-  			console.log(uploadCourseMaterial.fields.allIssues())
-  		}
+		<form
+			{...uploadCourseMaterial.enhance(async ({ form, data, submit }) => {
+				if (!data.file || !data.title) {
+					toast.error('Select a file and add a title');
+					return;
+				}
 
-      
-    } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
-    } finally {
-      uploading = false;
-    }
-  
-	
-})} enctype="multipart/form-data">
-      
+				uploading = true;
+				try {
+					if (await submit()) {
+						form.reset();
 
-    <div class="space-y-4">
-      <!-- Drop zone -->
-      <div
-        class="rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-colors
-               {dragOver ? 'border-brand-500 bg-brand-50/30 dark:bg-brand-950/10' : 'border-border hover:border-muted-foreground/40'}"
-        ondragover={(e) => { e.preventDefault(); dragOver = true; }}
-        ondragleave={() => (dragOver = false)}
-        ondrop={onDrop}
-        onclick={() => document.getElementById("file-input")?.click()}
-        role="button"
-        tabindex="0"
-        onkeydown={(e) => e.key === 'Enter' && document.getElementById("file-input")?.click()}
-      >
-        {#if file.value()}
-          <p class="text-sm font-medium text-foreground">{file.value().name}</p>
-          <p class="text-xs text-muted-foreground">{formatSize(file.value().size)}</p>
-        {:else}
-          <Upload class="size-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p class="text-sm text-muted-foreground">Click or drag file here</p>
-          <p class="text-xs text-muted-foreground/60">PDF, PPTX, DOCX, images, etc.</p>
-        {/if}
-        <input
-          id="file-input"
-          {...file.as("file")}
-          class="hidden"
-          accept=".pdf,.pptx,.ppt,.docx,.doc,.png,.jpg,.jpeg,.mp4,.mp3,.wav"
-          onchange={onFileInput}
-        />
-      </div>
+						toast.success('Uploaded successfully');
 
-      <div class="space-y-1.5">
-        <Label>Title</Label>
-        <Input placeholder="e.g. Week 3 Lecture Notes" {...title.as("text")} />
-      </div>
-      <input {...courseCode.as("hidden", page.params.code)}>
-      
+						uploadOpen = false;
+					} else {
+						toast.error('Invalid form data!');
+						console.log(uploadCourseMaterial.fields.allIssues());
+					}
+				} catch (e: any) {
+					toast.error(e.message ?? 'Upload failed');
+				} finally {
+					uploading = false;
+				}
+			})}
+			enctype="multipart/form-data"
+		>
+			<div class="space-y-4">
+				<!-- Drop zone -->
+				<div
+					class="cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition-colors
+               {dragOver
+						? 'border-brand-500 bg-brand-50/30 dark:bg-brand-950/10'
+						: 'border-border hover:border-muted-foreground/40'}"
+					ondragover={(e) => {
+						e.preventDefault();
+						dragOver = true;
+					}}
+					ondragleave={() => (dragOver = false)}
+					ondrop={onDrop}
+					onclick={() => document.getElementById('file-input')?.click()}
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => e.key === 'Enter' && document.getElementById('file-input')?.click()}
+				>
+					{#if file.value()}
+						<p class="text-sm font-medium text-foreground">{file.value().name}</p>
+						<p class="text-xs text-muted-foreground">{formatSize(file.value().size)}</p>
+					{:else}
+						<Upload class="mx-auto mb-2 size-8 text-muted-foreground/40" />
+						<p class="text-sm text-muted-foreground">Click or drag file here</p>
+						<p class="text-xs text-muted-foreground/60">PDF, PPTX, DOCX, images, etc.</p>
+					{/if}
+					<input
+						id="file-input"
+						{...file.as('file')}
+						class="hidden"
+						accept=".pdf,.pptx,.ppt,.docx,.doc,.png,.jpg,.jpeg,.mp4,.mp3,.wav"
+						onchange={onFileInput}
+					/>
+				</div>
 
-      <Button type="submit" class="w-full gap-2" disabled={uploading || !file.value()}>
-        {#if uploading}
-          <div class="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
-          Uploading…
-        {:else}
-          <Upload class="size-4" />
-          Upload
-        {/if}
-      </Button>
-    </div>
-    </form>
-  </Dialog.Content>
+				<div class="space-y-1.5">
+					<Label>Title</Label>
+					<Input placeholder="e.g. Week 3 Lecture Notes" {...title.as('text')} />
+				</div>
+				<input {...courseCode.as('hidden', page.params.code)} />
+
+				<Button type="submit" class="w-full gap-2" disabled={uploading || !file.value()}>
+					{#if uploading}
+						<div
+							class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+						></div>
+						Uploading…
+					{:else}
+						<Upload class="size-4" />
+						Upload
+					{/if}
+				</Button>
+			</div>
+		</form>
+	</Dialog.Content>
 </Dialog.Root>
