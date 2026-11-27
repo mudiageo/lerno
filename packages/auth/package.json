@@ -23,26 +23,18 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "@sveltejs/kit": "^2"
-  },
-  "peerDependenciesMeta": {
-    "@sveltejs/kit": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "@lerno/db": "workspace:*",
-    "@lerno/email": "workspace:*",
-    "better-auth": "^1.1.20"
-  },
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",
-    "auth:schema": "auth generate --config ./src/index.ts --output ../db/src/schema/auth.tmp.ts --yes && tsx scripts/merge-schemas.ts",
+    "auth:schema": "auth generate --config ./src/index.ts --output ../db/src/schema/auth.tmp.ts --yes && vpx scripts/merge-schemas.ts",
     "prepublishOnly": "vp run build"
+  },
+  "dependencies": {
+    "@lerno/db": "workspace:*",
+    "@lerno/email": "workspace:*",
+    "better-auth": "^1.1.20"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
@@ -53,5 +45,13 @@
     "typescript": "^5.9.3",
     "vite": "catalog:",
     "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "@sveltejs/kit": "^2"
+  },
+  "peerDependenciesMeta": {
+    "@sveltejs/kit": {
+      "optional": true
+    }
   }
 }

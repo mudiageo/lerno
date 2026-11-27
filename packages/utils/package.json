@@ -34,7 +34,6 @@
     "bumpp": "^11.0.1",
     "typescript": "^5.9.3",
     "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   }
 }

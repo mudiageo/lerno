@@ -17,16 +17,11 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "@aws-sdk/client-s3": "^3.758.0",
-    "@aws-sdk/s3-request-presigner": "^3.758.0"
   },
   "scripts": {
     "build": "vp pack",
@@ -34,6 +29,11 @@
     "test": "vp test",
     "check": "vp check",
     "prepublishOnly": "vp run build"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@aws-sdk/s3-request-presigner": "^3.758.0",
+    "dotenv": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
