@@ -46,6 +46,7 @@ catalogMode: prefer
 
 overrides:
   '@google/genai': 'catalog:'
+  '@tanstack/react-start': '1.168.60'
   '@types/fluent-ffmpeg': 'catalog:'
   fluent-ffmpeg: 'catalog:'
   pg-boss: 'catalog:'
