@@ -34,6 +34,7 @@ Set these on **both** Vercel and Cloudflare. `ORIGIN` must be the real public UR
 | `VITE_PUBLIC_APP_URL`                       | Browser/SSR auth client base URL (set to the same value as `ORIGIN`)               |
 | `BETTER_AUTH_SECRET`                        | Better Auth cookie/session signing secret                                          |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth (canonical sign-in provider)                                          |
+| `ADMIN_APP_URL`                             | Optional admin app origin for staff login redirects                                |
 | `DATABASE_URL`                              | PostgreSQL connection string (used by `@lerno/db`)                                 |
 | `STORAGE_TYPE`                              | `r2` on Cloudflare; `local` is only for local development                          |
 | `JOBS_SERVICE_URL`                          | Optional Node pg-boss enqueue service used when no `JOBS_QUEUE` binding is present |
@@ -45,10 +46,11 @@ Cloudflare additionally requires:
 - An optional `JOBS_QUEUE` producer binding; if absent, onboarding falls back to
   `JOBS_SERVICE_URL` and otherwise skips the job with a warning.
 
-`BETTER_AUTH_SECRET` and `ORIGIN` (or `BETTER_AUTH_URL`) must be present during
-the build as well as at runtime, because SvelteKit analyses routes after bundling.
-The web build no longer requires `DATABASE_URL` at build time — the DB client
-connects lazily on first query.
+`BETTER_AUTH_SECRET`, `ORIGIN`, and the Google OAuth values are read from
+SvelteKit private environment variables (`$app/env/private`) at runtime. They do
+not need to be present in the Cloudflare build container; route analysis uses a
+build-only placeholder secret. The web build also no longer requires
+`DATABASE_URL` at build time — the DB client connects lazily on first query.
 
 ---
 

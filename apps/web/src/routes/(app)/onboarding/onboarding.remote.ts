@@ -1,3 +1,4 @@
+import { JOBS_SERVICE_URL } from '$app/env/private';
 import { command, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { userCourses, users, courseSchedule, xpEvents } from '@lerno/db/schema';
@@ -17,14 +18,13 @@ async function enqueueGenerateContent(event: ReturnType<typeof getRequestEvent>,
     return;
   }
 
-  const jobsUrl = process.env.JOBS_SERVICE_URL;
-  if (!jobsUrl) {
+  if (!JOBS_SERVICE_URL) {
     console.warn('JOBS_SERVICE_URL is not set; skipping generate-content job');
     return;
   }
 
   try {
-    await fetch(`${jobsUrl.replace(/\/$/, '')}/jobs`, {
+    await fetch(`${JOBS_SERVICE_URL.replace(/\/$/, '')}/jobs`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
