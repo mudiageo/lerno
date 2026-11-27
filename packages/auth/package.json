@@ -28,13 +28,13 @@
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",
-    "auth:schema": "auth generate --config ./src/index.ts --output ../db/src/schema/auth.tmp.ts --yes && vpx scripts/merge-schemas.ts",
+    "auth:schema": "auth generate --config ./src/schema.config.ts --output ../db/src/schema/auth.tmp.ts --yes && vpx scripts/merge-schemas.ts",
     "prepublishOnly": "vp run build"
   },
   "dependencies": {
     "@lerno/db": "workspace:*",
     "@lerno/email": "workspace:*",
-    "better-auth": "^1.1.20"
+    "better-auth": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
@@ -47,7 +47,7 @@
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@sveltejs/kit": "^2"
+    "@sveltejs/kit": "^2 || ^3"
   },
   "peerDependenciesMeta": {
     "@sveltejs/kit": {
