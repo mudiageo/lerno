@@ -35,7 +35,19 @@ export const variables = defineEnvVars({
   },
   GITHUB_CLIENT_SECRET: {
     schema: v.optional(v.string(), ''),
-    description: 'GitHub Client Secret for OAuth login',
+    description: 'GitHub Client Secret for OAuth login (legacy demo only)',
+  },
+  GOOGLE_CLIENT_ID: {
+    schema: building ? v.optional(v.string(), '') : v.string(),
+    description: 'Google Client ID for OAuth login',
+  },
+  GOOGLE_CLIENT_SECRET: {
+    schema: building ? v.optional(v.string(), '') : v.string(),
+    description: 'Google Client Secret for OAuth login',
+  },
+  JOBS_SERVICE_URL: {
+    schema: v.optional(v.string(), ''),
+    description: 'Base URL of the Node pg-boss enqueue service (Vercel fallback)',
   },
   DATABASE_URL: {
     schema: building ? v.optional(v.string(), '') : v.string(),

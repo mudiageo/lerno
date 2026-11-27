@@ -46,6 +46,7 @@ export const actions: Actions = {
           email,
           password,
           name,
+          username: name.toLowerCase().replace(/\s+/g, ''),
           callbackURL: '/auth/verification-success',
         },
       });
@@ -60,18 +61,18 @@ export const actions: Actions = {
   },
   signInSocial: async (event) => {
     const formData = await event.request.formData();
-    const provider = formData.get('provider')?.toString() ?? 'github';
+    const provider = formData.get('provider')?.toString() ?? 'google';
     const callbackURL = formData.get('callbackURL')?.toString() ?? '/demo/better-auth';
 
     const result = await auth.api.signInSocial({
       body: {
-        provider: provider as 'github',
+        provider: provider as 'google',
         callbackURL,
       },
     });
 
     if (result.url) {
-      return redirect(302, result.url, { external: ['https://github.com'] });
+      return redirect(302, result.url, { external: ['https://accounts.google.com'] });
     }
     return fail(400, { message: 'Social sign-in failed' });
   },

@@ -1,11 +1,30 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "./schema/index";
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema/index';
 
-const dbUrl = process.env.DATABASE_URL;
+function createDatabase(url: string) {
+  return drizzle(postgres(url), { schema });
+}
 
-if (!dbUrl) throw new Error("DATABASE_URL is not set");
+type Database = ReturnType<typeof createDatabase>;
 
-const client = postgres(dbUrl);
+let database: Database | undefined;
 
-export const db = drizzle(client, { schema });
+function getDb(): Database {
+  if (!database) {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) throw new Error('DATABASE_URL is not set');
+    database = createDatabase(dbUrl);
+  }
+  return database;
+}
+
+// Defer connecting until the first query so builds (which analyse routes
+// without runtime secrets) do not need DATABASE_URL at module load time.
+export const db = new Proxy({} as Database, {
+  get(_target, property, receiver) {
+    const instance = getDb();
+    const value = Reflect.get(instance, property, receiver);
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});

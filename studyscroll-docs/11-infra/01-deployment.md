@@ -23,6 +23,35 @@
 
 ---
 
+## Phase 0 — required environment variables
+
+Set these on **both** Vercel and Cloudflare. `ORIGIN` must be the real public URL
+(no trailing slash); it is used by Better Auth for OAuth callbacks and cookies.
+
+| Variable                                    | Used for                                                                           |
+| ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `ORIGIN`                                    | Public app origin, e.g. `https://lerno.app`                                        |
+| `VITE_PUBLIC_APP_URL`                       | Browser/SSR auth client base URL (set to the same value as `ORIGIN`)               |
+| `BETTER_AUTH_SECRET`                        | Better Auth cookie/session signing secret                                          |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth (canonical sign-in provider)                                          |
+| `DATABASE_URL`                              | PostgreSQL connection string (used by `@lerno/db`)                                 |
+| `STORAGE_TYPE`                              | `r2` on Cloudflare; `local` is only for local development                          |
+| `JOBS_SERVICE_URL`                          | Optional Node pg-boss enqueue service used when no `JOBS_QUEUE` binding is present |
+
+Cloudflare additionally requires:
+
+- `WORKERS_CI=1` at build time so `apps/web/vite.config.ts` selects `adapter-cloudflare`.
+- `nodejs_compat` (already enabled in `apps/web/wrangler.jsonc`) for `postgres-js`.
+- An optional `JOBS_QUEUE` producer binding; if absent, onboarding falls back to
+  `JOBS_SERVICE_URL` and otherwise skips the job with a warning.
+
+`BETTER_AUTH_SECRET` and `ORIGIN` (or `BETTER_AUTH_URL`) must be present during
+the build as well as at runtime, because SvelteKit analyses routes after bundling.
+The web build no longer requires `DATABASE_URL` at build time — the DB client
+connects lazily on first query.
+
+---
+
 ## Vercel (Web App)
 
 ```json
@@ -46,14 +75,10 @@
     },
     {
       "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
     }
   ],
-  "rewrites": [
-    { "source": "/api/auth/(.*)", "destination": "/api/auth/$1" }
-  ]
+  "rewrites": [{ "source": "/api/auth/(.*)", "destination": "/api/auth/$1" }]
 }
 ```
 
@@ -67,8 +92,8 @@ databases:
   - name: studyscroll-db
     databaseName: studyscroll
     user: studyscroll
-    plan: standard  # 1 vCPU, 1GB RAM, 10GB storage
-    region: frankfurt  # or oregon, singapore
+    plan: standard # 1 vCPU, 1GB RAM, 10GB storage
+    region: frankfurt # or oregon, singapore
 
 services:
   # Background job worker
@@ -197,8 +222,8 @@ if (typeof window !== 'undefined' && import.meta.env.PUBLIC_POSTHOG_KEY) {
     api_host: import.meta.env.PUBLIC_POSTHOG_HOST,
     capture_pageview: true,
     capture_pageleave: true,
-    autocapture: false,  // manual tracking only for GDPR
-    persistence: 'memory',  // no localStorage
+    autocapture: false, // manual tracking only for GDPR
+    persistence: 'memory', // no localStorage
   });
 }
 
@@ -220,12 +245,17 @@ interface EmailProvider {
 
 class ResendProvider implements EmailProvider {
   private client: Resend;
-  constructor(apiKey: string) { this.client = new Resend(apiKey); }
-  
+  constructor(apiKey: string) {
+    this.client = new Resend(apiKey);
+  }
+
   async send({ to, subject, html, text }) {
     await this.client.emails.send({
       from: process.env.EMAIL_FROM ?? 'StudyScroll <noreply@studyscroll.dev>',
-      to, subject, html, text,
+      to,
+      subject,
+      html,
+      text,
     });
   }
 }
@@ -239,11 +269,14 @@ class NodemailerProvider implements EmailProvider {
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
   }
-  
+
   async send({ to, subject, html, text }) {
     await this.transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to, subject, html, text,
+      to,
+      subject,
+      html,
+      text,
     });
   }
 }
@@ -255,7 +288,13 @@ export const email: EmailProvider = process.env.RESEND_API_KEY
 
 // Email templates
 export const templates = {
-  examReminder: (params: { name: string; examTitle: string; courseCode: string; date: string; daysLeft: number }) => ({
+  examReminder: (params: {
+    name: string;
+    examTitle: string;
+    courseCode: string;
+    date: string;
+    daysLeft: number;
+  }) => ({
     subject: `📅 ${params.daysLeft === 1 ? 'Tomorrow' : `${params.daysLeft} days`}: ${params.examTitle} (${params.courseCode})`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -297,10 +336,10 @@ await boss.work('process-upload', { teamSize: 2 }, processUploadJob);
 await boss.work('downgrade-user', downgradeUserJob);
 
 // Scheduled jobs (cron)
-await boss.schedule('generate-ai-content-all-users', '0 2 * * *', {});  // 2am daily
-await boss.schedule('send-exam-reminders', '0 9 * * *', {});             // 9am daily
-await boss.schedule('update-leaderboards', '*/30 * * * *', {});          // every 30 min
-await boss.schedule('clean-old-notifications', '0 0 * * 0', {});         // weekly
+await boss.schedule('generate-ai-content-all-users', '0 2 * * *', {}); // 2am daily
+await boss.schedule('send-exam-reminders', '0 9 * * *', {}); // 9am daily
+await boss.schedule('update-leaderboards', '*/30 * * * *', {}); // every 30 min
+await boss.schedule('clean-old-notifications', '0 0 * * 0', {}); // weekly
 
 console.log('pg-boss worker started');
 ```

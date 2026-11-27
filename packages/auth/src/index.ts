@@ -7,13 +7,16 @@ import * as schema from '@lerno/db/schema';
 import { email } from '@lerno/email';
 import type { RequestEvent } from '@sveltejs/kit';
 
-
 export const authOptions: BetterAuthOptions = {
+  // Deployment-provided origin. Without it Better Auth would generate
+  // callback URLs pointing at localhost on Vercel/Cloudflare.
+  baseURL: process.env.ORIGIN || process.env.BETTER_AUTH_URL,
+  secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, { provider: 'pg', schema, usePlural: true }),
   advanced: {
     database: {
-      generateId: () => crypto.randomUUID()
-    }
+      generateId: () => crypto.randomUUID(),
+    },
   },
 
   emailAndPassword: {
@@ -46,8 +49,8 @@ export const authOptions: BetterAuthOptions = {
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 30,     // 30 days
-    updateAge: 60 * 60 * 24,           // refresh if older than 1 day
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    updateAge: 60 * 60 * 24, // refresh if older than 1 day
     cookieCache: { enabled: true, maxAge: 5 * 60 },
   },
 
@@ -84,8 +87,17 @@ export const authOptions: BetterAuthOptions = {
             handler: createAuthMiddleware(async (ctx) => {
               // Redirect staff to admin app, students to web app
               const user = ctx.context.newSession?.user as any;
-              if (user && ['superadmin', 'staff_admin', 'moderator', 'support', 'analyst', 'finance']
-                .includes(user.role)) {
+              if (
+                user &&
+                [
+                  'superadmin',
+                  'staff_admin',
+                  'moderator',
+                  'support',
+                  'analyst',
+                  'finance',
+                ].includes(user.role)
+              ) {
                 return Response.redirect(`${process.env.ADMIN_APP_URL}/dashboard`, 302);
               }
             }),
@@ -101,10 +113,7 @@ export const auth = betterAuth(authOptions);
 export const getAuth = (getRequestEvent: () => RequestEvent): typeof auth => {
   return betterAuth({
     ...authOptions,
-    plugins: [
-      ...(authOptions.plugins as []),
-      sveltekitCookies(getRequestEvent)
-    ]
+    plugins: [...(authOptions.plugins as []), sveltekitCookies(getRequestEvent)],
   });
 };
 

@@ -2,13 +2,41 @@ import { command, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { userCourses, users, courseSchedule, xpEvents } from '@lerno/db/schema';
 import { eq } from '@lerno/db/drizzle';
-import PgBoss from 'pg-boss';
 import * as v from 'valibot';
 
-// Initialize boss instance strictly to trigger jobs
-// Note: In production you'd use a singleton from @lerno/jobs, but we export the boss class
-const boss = new PgBoss(process.env.DATABASE_URL!);
-boss.start().catch(console.error);
+type JobsQueue = { send: (message: unknown) => Promise<string> };
+
+// pg-boss cannot run inside Workers. Prefer a Cloudflare Queue producer when
+// bound, otherwise POST to the Node jobs service. This keeps the web bundle
+// free of pg-boss on both Vercel and Cloudflare.
+async function enqueueGenerateContent(event: ReturnType<typeof getRequestEvent>, userId: string) {
+  const env = (event.platform as { env?: { JOBS_QUEUE?: JobsQueue } } | undefined)?.env;
+  const queue = env?.JOBS_QUEUE;
+  if (queue) {
+    await queue.send({ name: 'generate-content', data: { userId }, options: { startAfter: 5 } });
+    return;
+  }
+
+  const jobsUrl = process.env.JOBS_SERVICE_URL;
+  if (!jobsUrl) {
+    console.warn('JOBS_SERVICE_URL is not set; skipping generate-content job');
+    return;
+  }
+
+  try {
+    await fetch(`${jobsUrl.replace(/\/$/, '')}/jobs`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: 'generate-content',
+        data: { userId },
+        options: { startAfter: 5 },
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to queue content generation:', error);
+  }
+}
 
 const OnboardingSchema = v.object({
   username: v.pipe(v.string(), v.minLength(3), v.maxLength(30)),
@@ -77,11 +105,7 @@ export const completeOnboarding = command(OnboardingSchema, async (data) => {
 
   // 4. Queue initial content generation (out of transaction for performance)
   if (preferences.aiEnabled && courses.length > 0) {
-    try {
-      await boss.send('generate-content', { userId }, { startAfter: 5 });
-    } catch (e) {
-      console.error('Failed to queue content generation:', e);
-    }
+    await enqueueGenerateContent(event, userId);
   }
 
   return { success: true };

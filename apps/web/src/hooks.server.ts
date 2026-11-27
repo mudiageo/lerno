@@ -1,10 +1,9 @@
-import { getAuth } from '@lerno/auth';
+import { auth } from '#lib/server/auth.js';
 import { sequence, type Handle } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { building } from '$app/env';
-import { getRequestEvent } from '$app/server'; // or from event
 
-export const auth = getAuth(getRequestEvent);
+export { auth };
 
 const betterAuthHandle: Handle = async ({ event, resolve }) => {
   return svelteKitHandler({ event, resolve, auth, building });
