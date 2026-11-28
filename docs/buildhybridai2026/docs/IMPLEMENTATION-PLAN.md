@@ -105,4 +105,4 @@ Keep in a separate branch/repo, out of the submitted runtime. The FAQ says only 
 
 ## Commit protocol
 
-Doc checkpoint commit first (`grant-work/buildhybridai2026-lerno/` only). Dependency changes to `apps/web/package.json`, `pnpm-workspace.yaml` and `pnpm-lock.yaml` are deliberately left uncommitted in this checkpoint and should be committed with the implementation.
+Doc checkpoint commit first (`docs/buildhybridai2026/` and `HACKATHON.md` only). Dependency changes to `apps/web/package.json`, `pnpm-workspace.yaml` and `pnpm-lock.yaml` are deliberately left uncommitted in this checkpoint and should be committed with the implementation.

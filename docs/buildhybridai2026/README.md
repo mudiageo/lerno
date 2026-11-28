@@ -1,6 +1,6 @@
 # #BuildHybridAI 2026 — Lerno submission work
 
-Working packet for entering the existing Lerno app in the Firebase Hybrid AI Hackathon.
+Working packet for entering the existing Lerno app in the Firebase Hybrid AI Hackathon. The repo-root [`HACKATHON.md`](../../HACKATHON.md) is the visible entry point.
 
 ## Status
 
