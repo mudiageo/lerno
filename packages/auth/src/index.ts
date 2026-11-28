@@ -16,10 +16,26 @@ export interface AuthConfig {
 }
 
 export function createAuthOptions(config: AuthConfig): BetterAuthOptions {
+  const origin = config.baseURL?.trim();
+
   return {
-    // Deployment-provided origin. Without it Better Auth would generate
-    // callback URLs pointing at localhost on Vercel/Cloudflare.
-    baseURL: config.baseURL,
+    // A single static baseURL makes Better Auth's SvelteKit hook reject any
+    // request whose host differs from it (Vercel previews, workers.dev, local
+    // dev), which surfaces as a 404 on /api/auth/*. Resolve it per request
+    // instead, while keeping ORIGIN as the canonical fallback.
+    baseURL: origin
+      ? {
+          allowedHosts: [
+            new URL(origin).host,
+            '*.vercel.app',
+            '*.workers.dev',
+            'localhost:*',
+            '*.localhost:*',
+          ],
+          fallback: origin,
+          protocol: origin.startsWith('http://') ? 'http' : 'https',
+        }
+      : undefined,
     secret: config.secret,
     database: drizzleAdapter(db, { provider: 'pg', schema, usePlural: true }),
     advanced: {
