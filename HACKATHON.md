@@ -12,14 +12,17 @@ The detailed handoff packet lives in [`docs/buildhybridai2026/`](docs/buildhybri
 2. [`docs/buildhybridai2026/docs/RULES.md`](docs/buildhybridai2026/docs/RULES.md) — official rules digest and clauses that affect Lerno.
 3. [`docs/buildhybridai2026/docs/DECISIONS.md`](docs/buildhybridai2026/docs/DECISIONS.md) — entrant facts and locked decisions.
 4. [`docs/buildhybridai2026/docs/PROGRAM.md`](docs/buildhybridai2026/docs/PROGRAM.md) — dates, eligibility, prizes, judging and submission requirements.
-5. [`docs/buildhybridai2026/research/evidence-ledger.csv`](docs/buildhybridai2026/research/evidence-ledger.csv) — official sources and access dates.
+5. [`docs/buildhybridai2026/submission/`](docs/buildhybridai2026/submission/) — description draft, existing-app disclosure and demo script.
+6. [`docs/buildhybridai2026/research/evidence-ledger.csv`](docs/buildhybridai2026/research/evidence-ledger.csv) — official sources and access dates.
 
 ## Current state
 
 - Official rules and program brief: captured.
 - Entrant facts and product decisions: captured.
-- Firebase SDK dependency: installed.
-- Runtime implementation: not started.
+- Firebase AI Logic runtime, App Check wiring, capability readout and all judged features: implemented in `apps/web/src/lib/ai/*` and surfaced at `/hybrid`.
+- Existing-app disclosure, description draft and demo script: see `docs/buildhybridai2026/submission/`.
+- MIT licence added at repo root.
+- Final validation, deployment verification and commit/push: in progress.
 - Devpost form: not started.
 - YouTube demo: not recorded.
 

@@ -7,8 +7,12 @@ Working packet for entering the existing Lerno app in the Firebase Hybrid AI Hac
 - Research and official rule capture: **done** (`docs/PROGRAM.md`, `docs/RULES.md`)
 - Entrant facts and design decisions: **done** (`docs/DECISIONS.md`)
 - Feature spec and build order: **done** (`docs/IMPLEMENTATION-PLAN.md`)
-- Code implementation: **not started** (dependency install only)
+- Firebase AI Logic runtime and all judged features: **implemented** (`apps/web/src/lib/ai/*`, `/hybrid`)
+- Existing-app disclosure and description draft: **done** (`submission/`)
+- OSS licence: **done** (root `LICENSE`, root `license: MIT`)
+- Final validation and deployment verification: **in progress**
 - Devpost form: **not started** (needs logged-in field limits)
+- YouTube demo: **not recorded** (script in `submission/DEMO-SCRIPT.md`)
 
 ## Deadline
 
@@ -21,7 +25,7 @@ Working packet for entering the existing Lerno app in the Firebase Hybrid AI Hac
 - `docs/DECISIONS.md` — entrant facts and every product/architecture decision made so far.
 - `docs/IMPLEMENTATION-PLAN.md` — what to build, in what order, with exact SDK and env details.
 - `research/evidence-ledger.csv` — official URLs actually opened, with access date.
-- `submission/` — draft answers and uploads, created later.
+- `submission/` — description draft, existing-app disclosure and demo script.
 
 ## Continuation note
 

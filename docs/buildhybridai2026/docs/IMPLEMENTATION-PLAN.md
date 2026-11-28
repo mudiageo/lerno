@@ -27,11 +27,11 @@ Firebase AI Logic is a **client SDK**. On-device Gemini Nano uses Chrome's Promp
 
 ## Features, in build order
 
-### 1. Firebase plumbing + capability readout (in progress)
+### 1. Firebase plumbing + capability readout (implemented)
 
-- Dependency: `firebase@^13.4.0` added to `apps/web/package.json`; `@firebase/util` build script allowed in `pnpm-workspace.yaml`; lockfile updated. No source files written yet.
+- Dependency: `firebase@^13.4.0` added to `apps/web/package.json`; `@firebase/util` build script allowed in `pnpm-workspace.yaml`; lockfile updated.
 - New module: `apps/web/src/lib/ai/firebase.ts` (client-only; guard with `browser` from `$app/env`).
-  - `initializeApp(config)` from `firebase/app` with public config from `import.meta.env.VITE_PUBLIC_FIREBASE_*` — project convention already used for `VITE_PUBLIC_APP_URL` in `apps/web/src/lib/auth.svelte.ts`.
+  - `initializeApp(config)` from `firebase/app` with public config from named `$app/env/public` imports defined in `apps/web/src/env.ts`. No `process.env` or `import.meta.env` in app source.
   - App Check: `initializeAppCheck` + `ReCaptchaV3Provider` from `firebase/app-check`. In debug, set `self.FIREBASE_APPCHECK_DEBUG_TOKEN = true` **before** initialisation; never commit the token.
   - `getAI(app, { backend: new GoogleAIBackend() })`, then `getGenerativeModel(ai, { mode, onDeviceParams, inCloudParams })`.
   - Verified API in installed `firebase@13.4.0` / `@firebase/ai@3.1.0`: `InferenceMode.PREFER_ON_DEVICE`, `ONLY_ON_DEVICE`, `ONLY_IN_CLOUD`, `PREFER_IN_CLOUD` (values are lowercase strings); `InferenceSource.ON_DEVICE` / `IN_CLOUD`; `result.response.inferenceSource`; `model.initializeDeviceModel(onProgress)`.
@@ -40,40 +40,40 @@ Firebase AI Logic is a **client SDK**. On-device Gemini Nano uses Chrome's Promp
 - Capability readout: detect `(globalThis as any).LanguageModel?.availability()` → `available | downloadable | downloading | unavailable`; missing API means webview/no Chrome Prompt API. UI shows "On-device model available" or "On-device model unavailable — using cloud", plus a per-answer `ON_DEVICE` / `IN_CLOUD` badge from `inferenceSource`.
 - Env vars to add to `.env.example`: `VITE_PUBLIC_FIREBASE_API_KEY`, `VITE_PUBLIC_FIREBASE_AUTH_DOMAIN`, `VITE_PUBLIC_FIREBASE_PROJECT_ID`, `VITE_PUBLIC_FIREBASE_APP_ID`, `VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY`, `VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG`. Firebase web config is public-safe by design; App Check debug token is not.
 
-### 2. Offline Revision Pack — cache first
+### 2. Offline Revision Pack — cache first (implemented)
 
 - IndexedDB cache of course notes and past questions; small local wrapper (no new heavy dependency).
 - With the page loaded and network off, on-device generation produces flashcards/hints/explanations. Results queue locally and sync into the existing study deck via `study.remote.ts` on reconnect.
 - No service worker in the first pass; the airplane-mode demo works with the page already loaded.
 
-### 3. Private Pass — regex + on-device prompt
+### 3. Private Pass — regex + on-device prompt (implemented)
 
 - Regex masks phone numbers, matric numbers, emails and URLs.
 - An `ONLY_ON_DEVICE` prompt catches contextual names and addresses the regex misses.
 - Only sanitised text reaches the cloud. UI reports how many details stayed on device.
 
-### 4. Instant + Enhanced
+### 4. Instant + Enhanced (implemented)
 
 - One question, two answers: `PREFER_ON_DEVICE`/`ONLY_ON_DEVICE` for the instant answer, `ONLY_IN_CLOUD` with `inCloudParams.model` for the enhanced answer. Both labelled with `inferenceSource`.
 
-### 5. Curriculum Bootstrap
+### 5. Curriculum Bootstrap (implemented)
 
 - New "Set up your courses" flow, reachable **both** from onboarding and settings, sharing one component and one bulk-insert remote function.
-- Upload a prospectus/curriculum PDF. `pdfjs-dist` extracts text in the browser; scanned pages render to JPEG/PNG and use text+image input.
+- Upload a prospectus/curriculum PDF. `pdfjs-dist` extracts text in the browser; scanned pages render to JPEG/PNG and are transcribed with `ONLY_ON_DEVICE`, then discarded before any cloud extraction.
 - Structured JSON output maps to existing `packages/db/src/schema/courses.ts`: `{ code, title, units, outline, topics[] }[]`.
 - Run Private Pass before any cloud call.
 - Editable preview table; confirm before bulk insert.
 - Google Drive import: **pasted public file links only, no API key**. Parse `drive.google.com/file/d/<id>/view` and `uc?id=<id>`; fetch `uc?export=download&id=<id>&confirm=t` (the `confirm=t` handles the large-file scan interstitial). Only "anyone with the link" files work. Per-file status and course-match suggestions; nothing written until confirm.
 
-### 6. Snap-and-Mark
+### 6. Snap-and-Mark (implemented)
 
 - Photograph a past question and handwritten answer (JPEG/PNG). On-device image input extracts both, marks against a cached answer key with structured JSON output; ambiguous answers escalate to cloud.
 
-### 7. Data-saved counter
+### 7. Data-saved counter (implemented)
 
 - Count on-device answers and estimate upload avoided. Small UI element across all features.
 
-### 8. Service worker — stretch only
+### 8. Service worker — stretch only (not built)
 
 - App shell cache for installability and offline reload. Cut this first if time is short.
 
