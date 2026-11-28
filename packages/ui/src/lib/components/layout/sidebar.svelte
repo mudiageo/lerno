@@ -16,6 +16,7 @@
   import { Badge } from "#lib/components/ui/badge/index.js";
   import { Separator } from "#lib/components/ui/separator/index.js";
   import Clapperboard from "@lucide/svelte/icons/clapperboard";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
 
   let { user, onCompose }: { user?: any; onCompose?: () => void } = $props();
 
@@ -24,6 +25,7 @@
     { href: "/watch", icon: Tv, label: "Watch" },
     { href: "/watch/shorts", icon: Clapperboard, label: "Shorts" },
     { href: "/study", icon: BookOpen, label: "Study" },
+    { href: "/hybrid", icon: Sparkles, label: "Hybrid AI" },
     { href: "/live", icon: Radio, label: "Live" },
     { href: "/communities", icon: Users, label: "Communities" },
     { href: "/leaderboard", icon: Trophy, label: "Leaderboard" },

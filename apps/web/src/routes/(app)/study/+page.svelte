@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { getStudyDeck, getQuizSession } from './study.remote';
 	import { ModeCard, FlashcardDeck, QuizSession, PomodoroTimer } from '@lerno/ui/components/study';
 	import BookOpen from '@lucide/svelte/icons/book-open';
 	import BrainCircuit from '@lucide/svelte/icons/brain-circuit';
 	import Clock from '@lucide/svelte/icons/clock';
 	import BarChart3 from '@lucide/svelte/icons/bar-chart-3';
+	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import { useSession } from '#lib/auth.svelte.js';
 	import { Button } from '@lerno/ui/components/ui/button';
 	import { Skeleton } from '@lerno/ui/components/ui/skeleton';
@@ -108,6 +110,18 @@
 				>
 					{#snippet icon()}
 						<BarChart3 class="size-6 text-brand-500" />
+					{/snippet}
+				</ModeCard>
+
+				<ModeCard
+					title="Hybrid Lab"
+					description="On-device and cloud Firebase AI Logic study tools for extracting courses, generating quizzes, and more."
+					badge="NEW"
+					badgeVariant="outline"
+					onchoose={() => goto('/hybrid')}
+				>
+					{#snippet icon()}
+						<Sparkles class="size-6 text-brand-500" />
 					{/snippet}
 				</ModeCard>
 			</div>

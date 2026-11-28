@@ -10,6 +10,7 @@
 	import Shield from '@lucide/svelte/icons/shield';
 	import CreditCard from '@lucide/svelte/icons/credit-card';
 	import Palette from '@lucide/svelte/icons/palette';
+	import BookOpen from '@lucide/svelte/icons/book-open';
 	import Database from '@lucide/svelte/icons/database';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import LogOut from '@lucide/svelte/icons/log-out';
@@ -41,6 +42,17 @@
 					icon: Palette,
 					label: 'Display & Notifications',
 					desc: 'Theme, alerts, preferences'
+				}
+			]
+		},
+		{
+			title: 'Learning Tools',
+			items: [
+				{
+					href: '/settings/curriculum',
+					icon: BookOpen,
+					label: 'Curriculum Bootstrap',
+					desc: 'Import courses from a prospectus or Drive link'
 				}
 			]
 		},

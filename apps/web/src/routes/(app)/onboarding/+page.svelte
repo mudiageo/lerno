@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useSession } from '#lib/auth.svelte.js';
 	import { completeOnboarding } from './onboarding.remote';
+	import CurriculumBootstrap from '#lib/components/hybrid/CurriculumBootstrap.svelte';
 
 	const session = useSession();
 
@@ -107,6 +108,16 @@
 			<h2 class="mb-4 text-xl font-semibold">Add your courses</h2>
 			<p class="mb-6 text-zinc-500">
 				We use this to personalize your feed and generate AI study content.
+			</p>
+
+			<CurriculumBootstrap
+				compact
+				onCourses={(imported) => {
+					courses = imported.map((c) => ({ code: c.code, title: c.title, semester: 'Fall 2026' }));
+				}}
+			/>
+			<p class="mb-6 text-sm text-zinc-500">
+				Or import from a prospectus — you can edit everything before continuing.
 			</p>
 
 			{#each courses as course, i}

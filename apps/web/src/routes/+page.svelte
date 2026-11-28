@@ -55,6 +55,9 @@
 			</div>
 
 			<div class="flex items-center gap-4">
+				<a href="/hybrid" class="text-sm font-medium transition-colors hover:text-indigo-400"
+					>Hybrid AI</a
+				>
 				{#if session?.data?.user}
 					<a href="/feed" class="text-sm font-medium transition-colors hover:text-indigo-400"
 						>Go to App</a
@@ -107,11 +110,12 @@
 				>
 					Start Learning Free
 				</a>
-				<button
+				<a
+					href="/hybrid"
 					class="w-full rounded-2xl border border-white/10 bg-white/5 px-8 py-4 text-lg font-bold text-white backdrop-blur-sm transition-all hover:bg-white/10 sm:w-auto"
 				>
-					Watch Demo
-				</button>
+					Try Hybrid AI
+				</a>
 			</div>
 
 			<!-- Hero Visual (Course Card Mockup) -->
