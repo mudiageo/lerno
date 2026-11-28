@@ -1,42 +1,12 @@
-import { JOBS_SERVICE_URL } from '$app/env/private';
 import { command, getRequestEvent } from '$app/server';
 import { db } from '@lerno/db';
 import { userCourses, users, courseSchedule, xpEvents } from '@lerno/db/schema';
 import { eq } from '@lerno/db/drizzle';
 import * as v from 'valibot';
 
-type JobsQueue = { send: (message: unknown) => Promise<string> };
-
-// pg-boss cannot run inside Workers. Prefer a Cloudflare Queue producer when
-// bound, otherwise POST to the Node jobs service. This keeps the web bundle
-// free of pg-boss on both Vercel and Cloudflare.
-async function enqueueGenerateContent(event: ReturnType<typeof getRequestEvent>, userId: string) {
-  const env = (event.platform as { env?: { JOBS_QUEUE?: JobsQueue } } | undefined)?.env;
-  const queue = env?.JOBS_QUEUE;
-  if (queue) {
-    await queue.send({ name: 'generate-content', data: { userId }, options: { startAfter: 5 } });
-    return;
-  }
-
-  if (!JOBS_SERVICE_URL) {
-    console.warn('JOBS_SERVICE_URL is not set; skipping generate-content job');
-    return;
-  }
-
-  try {
-    await fetch(`${JOBS_SERVICE_URL.replace(/\/$/, '')}/jobs`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        name: 'generate-content',
-        data: { userId },
-        options: { startAfter: 5 },
-      }),
-    });
-  } catch (error) {
-    console.error('Failed to queue content generation:', error);
-  }
-}
+// Content generation now runs in the web client through Firebase AI Logic.
+// The old server job code remains in packages/jobs as disclosed pre-existing
+// code, but this submitted runtime does not enqueue it.
 
 const OnboardingSchema = v.object({
   username: v.pipe(v.string(), v.minLength(3), v.maxLength(30)),
@@ -102,11 +72,6 @@ export const completeOnboarding = command(OnboardingSchema, async (data) => {
       })
       .onConflictDoNothing();
   });
-
-  // 4. Queue initial content generation (out of transaction for performance)
-  if (preferences.aiEnabled && courses.length > 0) {
-    await enqueueGenerateContent(event, userId);
-  }
 
   return { success: true };
 });
