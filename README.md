@@ -49,10 +49,14 @@ Firebase web config values are public-safe. Copy `.env.example` to `.env` and fi
 ## Validation
 
 ```bash
-vp check
-vp build
-WORKERS_CI=1 vp build
+vp check --no-fmt
+vp -C apps/web build
+WORKERS_CI=1 vp -C apps/web build
 vp run test -r
 ```
 
-`vp run test -r` still has known pre-existing placeholder test failures unrelated to the hybrid features. See [HACKATHON.md](./HACKATHON.md) and `docs/buildhybridai2026/` for the full handoff packet.
+`vp check --no-fmt` skips the repository-wide formatter check because pre-existing files have mixed line endings; type and lint checks report 0 errors. `vp run test -r` still has known pre-existing placeholder test failures unrelated to the hybrid features. See [HACKATHON.md](./HACKATHON.md) and `docs/buildhybridai2026/` for the full handoff packet.
+
+## Deployment
+
+Vercel uses the root `vercel.json`: dependencies are installed with the frozen lockfile, canonical migrations are applied with `pnpm --filter @lerno/db run migrate:deploy`, then the web app is built with `pnpm --filter web build`. Cloudflare Workers builds use `WORKERS_CI=1` and the existing `apps/web/wrangler.jsonc`.

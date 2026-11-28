@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "sveltekit",
+  "installCommand": "pnpm install --frozen-lockfile && pnpm --filter @lerno/db run migrate:deploy",
+  "buildCommand": "pnpm --filter web build"
+}
