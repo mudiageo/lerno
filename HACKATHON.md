@@ -24,8 +24,8 @@ The detailed handoff packet lives in [`docs/buildhybridai2026/`](docs/buildhybri
 - Existing-app disclosure, description draft and demo script: see `docs/buildhybridai2026/submission/`.
 - MIT licence added at repo root.
 - Final validation and deployment config: done; all changes committed and pushed.
-- Firebase project: created. Public web config is wired in gitignored `apps/web/.env.local`; `FIREBASE_APPCHECK_SITE_KEY` is still pending. App Check provider can be `recaptcha-v3` or `recaptcha-enterprise` — see `FIREBASE-SETUP.md`.
-- Demo domain DNS: pending; `lerno.mudiageo.tech` currently returns NXDOMAIN.
+- Firebase project: created. Public web config is wired in gitignored `apps/web/.env.local`; the App Check public key is still pending. Use `recaptcha-enterprise` because reCAPTCHA v3 creation is deprecated/greyed out — see `FIREBASE-SETUP.md`.
+- Demo domain DNS: live; `lerno.mudiageo.tech` resolves to Vercel and returns 200. `/hybrid` still shows **Web config missing** until Vercel env vars are added and redeployed.
 - Devpost form: not started.
 - YouTube demo: not recorded.
 

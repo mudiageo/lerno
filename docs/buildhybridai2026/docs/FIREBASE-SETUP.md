@@ -30,17 +30,23 @@ For Vercel, add them as Environment Variables for Production/Preview. For local 
 
 `FIREBASE_APPCHECK_SITE_KEY` is the **public site key**, never the secret key. `FIREBASE_APPCHECK_PROVIDER` is `recaptcha-v3` by default, or `recaptcha-enterprise` if you created the key in Google Cloud Fraud Defense (formerly reCAPTCHA Enterprise). `FIREBASE_APPCHECK_DEBUG` must be `false` or absent in production.
 
-## 3. Firebase App Check
+## 3. Firebase App Check — use Fraud Defense / reCAPTCHA Enterprise
 
-1. In Firebase console, open **Build → App Check**.
-2. Register the web app with the **reCAPTCHA v3** provider (or **reCAPTCHA Enterprise** if you are using Google Cloud Fraud Defense).
-3. Create the site key for `lerno.mudiageo.tech`.
-4. In the Firebase app registration, paste the **secret key** when asked. That value stays in the Firebase console; it must never enter the repo or an env var.
-5. Authorise `lerno.mudiageo.tech` (and `localhost` for development).
-6. Set `FIREBASE_APPCHECK_SITE_KEY` to the **public site key**. If you used Fraud Defense / reCAPTCHA Enterprise, also set `FIREBASE_APPCHECK_PROVIDER=recaptcha-enterprise`.
+If the reCAPTCHA v3 option is greyed out with a deprecation warning, that is expected for new keys. Use the supported **reCAPTCHA Enterprise** provider instead; the app already supports it.
+
+1. Open the Google Cloud console for the `lerno-1` project and go to **Security → Fraud Defense** (formerly **reCAPTCHA Enterprise**): <https://console.cloud.google.com/security/recaptcha>.
+2. If prompted, enable the **reCAPTCHA Enterprise API** for the project. Key creation stays disabled until the API is enabled.
+3. Create a **Web**-type, **score-based** key for `lerno.mudiageo.tech`.
+   - Leave **Use checkbox challenge** unchecked.
+   - Do not add `localhost` to a production key; use the debug provider locally instead.
+4. Copy the public key that Google Cloud shows.
+5. In the Firebase console, open **Build → App Check → Apps**, register the web app with the **reCAPTCHA Enterprise** provider, and paste that key when asked.
+6. Set `FIREBASE_APPCHECK_SITE_KEY` to that same public key and `FIREBASE_APPCHECK_PROVIDER=recaptcha-enterprise` in both `apps/web/.env.local` and Vercel.
 7. Enable **enforcement** for AI Logic after verifying the app works.
 
-The console warning that “reCAPTCHA Classic is deprecated, use Google Cloud Fraud Defense” applies to newly created key types. Firebase still supports the reCAPTCHA v3 provider for App Check, but recommends Enterprise for new integrations. Either provider works with this app; do not paste the **secret key** into code, env files, chat or the Devpost form.
+The Spark plan includes a no-cost assessment quota, so billing is not required for this demo. Do not paste a reCAPTCHA **secret key**, App Check debug token or private key into the repo, env files, chat or the Devpost form. The browser SDK only needs the public key.
+
+Legacy v3 path, if your console still allows it: register the web app with the **reCAPTCHA v3** provider, create a v3 site key, paste the v3 **secret key** into the Firebase app registration, and keep `FIREBASE_APPCHECK_PROVIDER=recaptcha-v3`.
 
 Local debug flow:
 
@@ -63,13 +69,14 @@ Non-Chrome browsers and webviews are expected to show **On-device model unavaila
 
 ## 5. Domain and deployment
 
-`lerno.mudiageo.tech` currently returns NXDOMAIN. Point it at the existing deployment, then confirm:
+`lerno.mudiageo.tech` now resolves to Vercel and returns `HTTP/1.1 200 OK` at the root. Confirm from your own machine with:
 
 ```bash
 curl -I -L https://lerno.mudiageo.tech
+curl -I -L https://lerno.mudiageo.tech/hybrid
 ```
 
-The URL must stay public, free and unrestricted through 16 Dec 2026. Redeploy after adding the env vars so the public config is baked into the client build.
+The URL must stay public, free and unrestricted through 16 Dec 2026. Add the six Firebase env vars in Vercel (Production and Preview) and redeploy; `/hybrid` currently shows **Web config missing** because they are not set in the deployment yet.
 
 ## 6. Runtime verification checklist
 
