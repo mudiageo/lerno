@@ -21,8 +21,11 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@lerno/ai": "workspace:*",
+    "firebase": "^13.4.0",
     "livekit-client": "catalog:",
     "livekit-server-sdk": "catalog:",
+    "pdfjs-dist": "catalog:",
     "pg-boss": "catalog:"
   },
   "devDependencies": {

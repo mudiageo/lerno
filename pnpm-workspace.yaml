@@ -28,6 +28,7 @@ catalog:
   livekit-server-sdk: ^2.15.0
   mode-watcher: ^1.1.0
   paneforge: ^1.0.2
+  pdfjs-dist: ^6.5.438
   pg-boss: ^10.1.4
   portless: ^0.10.3
   postgres: ^3.4.8
@@ -53,6 +54,7 @@ overrides:
   pg-boss: 'catalog:'
   vite@*: 'catalog:'
 allowBuilds:
+  '@firebase/util': true
   '@prisma/client': true
   better-sqlite3: true
   esbuild: true

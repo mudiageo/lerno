@@ -18,10 +18,18 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./prompts": "./src/prompts/content.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.33.1",
@@ -32,13 +40,6 @@
     "fluent-ffmpeg": "catalog:",
     "valibot": "catalog:",
     "wav": "^1.0.2"
-  },
-  "scripts": {
-    "build": "vp pack",
-    "dev": "vp pack --watch",
-    "test": "vp test",
-    "check": "vp check",
-    "prepublishOnly": "vp run build"
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "catalog:",
