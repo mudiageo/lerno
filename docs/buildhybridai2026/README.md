@@ -20,6 +20,7 @@ Working packet for entering the existing Lerno app in the Firebase Hybrid AI Hac
 
 ## Directory guide
 
+- `docs/FIREBASE-SETUP.md` — remaining console, App Check, Chrome, domain and runtime verification steps.
 - `docs/PROGRAM.md` — official dates, eligibility, prizes, judging criteria, requirements, source URLs.
 - `docs/RULES.md` — section-by-section digest of the Official Rules, including the legal terms.
 - `docs/DECISIONS.md` — entrant facts and every product/architecture decision made so far.
