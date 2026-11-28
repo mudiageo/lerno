@@ -43,10 +43,6 @@ export const variables = defineEnvVars({
     schema: v.optional(v.string(), ''),
     description: 'Public URL of the admin app for staff redirects',
   },
-  JOBS_SERVICE_URL: {
-    schema: v.optional(v.string(), ''),
-    description: 'Base URL of the Node pg-boss enqueue service (Vercel fallback)',
-  },
   DATABASE_URL: {
     schema: building ? v.optional(v.string(), '') : v.string(),
     description: 'Connection string for the Postgres database',
