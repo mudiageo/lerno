@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;--> statement-breakpoint
 CREATE TYPE "public"."plan" AS ENUM('free', 'premium', 'institutional');--> statement-breakpoint
 CREATE TYPE "public"."theme" AS ENUM('light', 'dark', 'oled', 'system');--> statement-breakpoint
 CREATE TYPE "public"."event_type" AS ENUM('exam', 'quiz', 'lab', 'assignment', 'presentation', 'other');--> statement-breakpoint
@@ -102,7 +103,7 @@ CREATE TABLE "posts" (
 	"repost_count" integer DEFAULT 0,
 	"view_count" integer DEFAULT 0,
 	"engagement_score" integer DEFAULT 0,
-	"search_vector" "tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(content->>'body', '') || ' ' || array_to_string(topic_tags, ' '))) STORED",
+	"search_vector" "tsvector" GENERATED ALWAYS AS (to_tsvector('english'::regconfig, coalesce(content->>'body', ''))) STORED,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );
@@ -388,7 +389,7 @@ ALTER TABLE "ticket_messages" ADD CONSTRAINT "ticket_messages_ticket_id_support_
 ALTER TABLE "ticket_messages" ADD CONSTRAINT "ticket_messages_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_users_username_trgm" ON "users" USING gin ("username" gin_trgm_ops);--> statement-breakpoint
-CREATE INDEX "idx_schedule_user_upcoming" ON "course_schedule" USING btree ("user_id","scheduled_at") WHERE "course_schedule"."scheduled_at" > now();--> statement-breakpoint
+CREATE INDEX "idx_schedule_user_upcoming" ON "course_schedule" USING btree ("user_id","scheduled_at");--> statement-breakpoint
 CREATE INDEX "idx_posts_course_created" ON "posts" USING btree ("course_id","created_at" DESC);--> statement-breakpoint
 CREATE INDEX "idx_posts_engagement" ON "posts" USING btree ("engagement_score" DESC,"created_at" DESC);--> statement-breakpoint
 CREATE INDEX "idx_posts_author" ON "posts" USING btree ("author_id","created_at" DESC);--> statement-breakpoint

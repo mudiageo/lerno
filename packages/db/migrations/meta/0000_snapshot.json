@@ -404,7 +404,6 @@
             }
           ],
           "isUnique": false,
-          "where": "\"course_schedule\".\"scheduled_at\" > now()",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -667,9 +666,13 @@
         },
         "search_vector": {
           "name": "search_vector",
-          "type": "tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(content->>'body', '') || ' ' || array_to_string(topic_tags, ' '))) STORED",
+          "type": "tsvector",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "generated": {
+            "as": "to_tsvector('english'::regconfig, coalesce(content->>'body', ''))",
+            "type": "stored"
+          }
         },
         "created_at": {
           "name": "created_at",

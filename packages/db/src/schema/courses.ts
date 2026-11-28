@@ -1,5 +1,4 @@
 import { pgTable, uuid, varchar, text, boolean, timestamp, integer, pgEnum, index } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 import { users } from './users';
 
 export const eventTypeEnum = pgEnum('event_type', ['exam', 'quiz', 'lab', 'assignment', 'presentation', 'other']);
@@ -35,7 +34,6 @@ export const courseSchedule = pgTable('course_schedule', {
 }, (t) => ({
   idx_schedule_user_upcoming: index('idx_schedule_user_upcoming')
     .on(t.userId, t.scheduledAt)
-    .where(sql`${t.scheduledAt} > now()`)
 }));
 
 export const courseMaterials = pgTable('course_materials', {

@@ -191,7 +191,7 @@ vp test
 # GitHub Actions runs: vp check → vp test → preview deploy on Vercel
 
 # 3. After review, merge to main
-# GitHub Actions: vp run db:migrate → vp build → vercel --prod
+# GitHub Actions: migrate:deploy → vp build → vercel --prod
 
 # 4. Verify
 curl https://app.studyscroll.dev/api/health
@@ -205,10 +205,10 @@ curl https://app.studyscroll.dev/api/health
 cat packages/db/migrations/$(ls packages/db/migrations | tail -1)
 
 # 2. Test on staging DB first
-DATABASE_URL=$STAGING_DATABASE_URL vp run db:migrate
+DATABASE_URL=$STAGING_DATABASE_URL pnpm --filter @lerno/db run migrate:deploy
 
 # 3. Run on production during low-traffic window (2-4am)
-DATABASE_URL=$PRODUCTION_DATABASE_URL vp run db:migrate
+DATABASE_URL=$PRODUCTION_DATABASE_URL pnpm --filter @lerno/db run migrate:deploy
 
 # 4. Verify migration
 vp run db:studio

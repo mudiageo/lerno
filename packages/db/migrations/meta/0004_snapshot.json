@@ -206,7 +206,6 @@
             }
           ],
           "isUnique": false,
-          "where": "\"course_schedule\".\"scheduled_at\" > now()",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2052,7 +2051,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -2199,7 +2198,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
@@ -2256,9 +2255,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "display_name": {
           "name": "display_name",
@@ -2376,13 +2376,13 @@
         },
         "referred_by": {
           "name": "referred_by",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "institution_id": {
           "name": "institution_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }

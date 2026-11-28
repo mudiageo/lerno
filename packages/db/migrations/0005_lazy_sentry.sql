@@ -1,6 +1,1 @@
-ALTER TABLE "accounts" ALTER COLUMN "user_id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "sessions" ALTER COLUMN "user_id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "referred_by" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "institution_id" SET DATA TYPE uuid;
+-- no-op: users.id was never changed from uuid

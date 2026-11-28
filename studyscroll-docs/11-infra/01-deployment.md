@@ -60,6 +60,7 @@ build-only placeholder secret. The web build also no longer requires
 // vercel.json
 {
   "framework": "sveltekit",
+  "installCommand": "pnpm install --frozen-lockfile && pnpm --filter @lerno/db run migrate:deploy",
   "buildCommand": "vp build",
   "outputDirectory": ".svelte-kit/output",
   "env": {
@@ -83,6 +84,8 @@ build-only placeholder secret. The web build also no longer requires
   "rewrites": [{ "source": "/api/auth/(.*)", "destination": "/api/auth/$1" }]
 }
 ```
+
+`DATABASE_URL` must be available during Vercel's install phase. Use the `installCommand` above instead of `vp run db:migrate`: Vercel runs from `apps/web`, where `vp` cannot see the root migration task, and the task runner does not pass `DATABASE_URL` through to `drizzle-kit`. `migrate:deploy` uses `postgres-js`, which also works against Neon's pooled connection strings.
 
 ---
 
@@ -176,7 +179,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - run: npm install -g vite-plus
       - run: vp install
-      - run: vp run db:migrate
+      - run: pnpm --filter @lerno/db run migrate:deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: vp run build:web

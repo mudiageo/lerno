@@ -947,7 +947,7 @@ Set up: check → preview deploy on PR → production deploy on merge to main.
 **20.2 Database migrations in CI**
 → See `11-infra/01-deployment.md`
 
-Auto-run `db:migrate` before each production deploy.
+Auto-run `pnpm --filter @lerno/db run migrate:deploy` before each production deploy.
 
 **20.3 Sentry setup**
 → See `11-infra/01-deployment.md` → "Monitoring"  

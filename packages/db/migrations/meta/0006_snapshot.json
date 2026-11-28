@@ -206,7 +206,6 @@
             }
           ],
           "isUnique": false,
-          "where": "\"course_schedule\".\"scheduled_at\" > now()",
           "concurrently": false,
           "method": "btree",
           "with": {}
