@@ -1,0 +1,14 @@
+claim,number,unit,geography,year-of-data,source-name,url,date-accessed,verified(y/n),used-in
+Submission deadline,30 Nov 2026 2:00 PM PT,date-time,global,2026,Devpost Official Rules,https://firebasehybridaihackathon.devpost.com/rules,2026-11-28,y,PROGRAM.md RULES.md
+Judging period,10-16 Dec 2026,date range,global,2026,Devpost Official Rules,https://firebasehybridaihackathon.devpost.com/rules,2026-11-28,y,PROGRAM.md
+Prize pool,30000,USD,global,2026,Devpost Overview,https://firebasehybridaihackathon.devpost.com/,2026-11-28,y,PROGRAM.md
+Grand prize,10000,USD,global,2026,Devpost Official Rules,https://firebasehybridaihackathon.devpost.com/rules,2026-11-28,y,PROGRAM.md
+Best Web/Chrome prize,3000,USD,global,2026,Devpost Official Rules,https://firebasehybridaihackathon.devpost.com/rules,2026-11-28,y,PROGRAM.md
+Judging criteria,4 equally weighted 1-5 scores,count,global,2026,Devpost Overview,https://firebasehybridaihackathon.devpost.com/,2026-11-28,y,PROGRAM.md RULES.md
+Demo video limit,3,minutes,global,2026,Devpost Official Rules,https://firebasehybridaihackathon.devpost.com/rules,2026-11-28,y,PROGRAM.md RULES.md
+Sprint 3 quota request deadline,25 Nov 2026 10:00 AM PT,date-time,global,2026,Devpost FAQ,https://firebasehybridaihackathon.devpost.com/details/faqs,2026-11-28,y,PROGRAM.md
+On-device web requirement,Chrome Desktop 139+,version,global,2026,Firebase AI Logic hybrid web guide,https://firebase.google.com/docs/ai-logic/hybrid/web/get-started,2026-11-28,y,IMPLEMENTATION-PLAN.md
+Hybrid SDK minimum version,12.5.0,version,global,2026,Firebase AI Logic hybrid web guide,https://firebase.google.com/docs/ai-logic/hybrid/web/get-started,2026-11-28,y,IMPLEMENTATION-PLAN.md
+Inference source property,response.inferenceSource,API field,global,2026,Firebase AI Logic hybrid configuration,https://firebase.google.com/docs/ai-logic/hybrid/web/configuration-options,2026-11-28,y,IMPLEMENTATION-PLAN.md
+App Check debug provider,self.FIREBASE_APPCHECK_DEBUG_TOKEN,API field,global,2026,Firebase App Check debug provider guide,https://firebase.google.com/docs/app-check/web/debug-provider,2026-11-28,y,IMPLEMENTATION-PLAN.md
+Organiser weekend plan,Saturday record video Sunday submit,schedule,global,2026,Devpost update 47985,https://firebasehybridaihackathon.devpost.com/updates/47985-your-weekend-game-plan-3-days-until-the-deadline,2026-11-28,y,PROGRAM.md
