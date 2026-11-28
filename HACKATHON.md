@@ -13,7 +13,7 @@ The detailed handoff packet lives in [`docs/buildhybridai2026/`](docs/buildhybri
 3. [`docs/buildhybridai2026/docs/RULES.md`](docs/buildhybridai2026/docs/RULES.md) — official rules digest and clauses that affect Lerno.
 4. [`docs/buildhybridai2026/docs/DECISIONS.md`](docs/buildhybridai2026/docs/DECISIONS.md) — entrant facts and locked decisions.
 5. [`docs/buildhybridai2026/docs/PROGRAM.md`](docs/buildhybridai2026/docs/PROGRAM.md) — dates, eligibility, prizes, judging and submission requirements.
-6. [`docs/buildhybridai2026/submission/`](docs/buildhybridai2026/submission/) — description draft, existing-app disclosure and demo script.
+6. [`docs/buildhybridai2026/submission/`](docs/buildhybridai2026/submission/) — description draft, Devpost answer bank, existing-app disclosure and demo script.
 7. [`docs/buildhybridai2026/research/evidence-ledger.csv`](docs/buildhybridai2026/research/evidence-ledger.csv) — official sources and access dates.
 
 ## Current state

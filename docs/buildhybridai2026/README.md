@@ -26,7 +26,7 @@ Working packet for entering the existing Lerno app in the Firebase Hybrid AI Hac
 - `docs/DECISIONS.md` — entrant facts and every product/architecture decision made so far.
 - `docs/IMPLEMENTATION-PLAN.md` — what to build, in what order, with exact SDK and env details.
 - `research/evidence-ledger.csv` — official URLs actually opened, with access date.
-- `submission/` — description draft, existing-app disclosure and demo script.
+- `submission/` — description draft, Devpost answer bank, existing-app disclosure and demo script.
 
 ## Continuation note
 
