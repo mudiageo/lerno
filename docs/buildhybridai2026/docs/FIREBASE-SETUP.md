@@ -26,7 +26,7 @@ FIREBASE_APPCHECK_SITE_KEY
 FIREBASE_APPCHECK_PROVIDER
 ```
 
-For Vercel, add them as Environment Variables for Production/Preview. For local development, copy `.env.example` to `apps/web/.env.local` (never commit it) and set `FIREBASE_APPCHECK_DEBUG=true` only there. Vite resolves env files from the web app root, so the file must live in `apps/web/`, not the repository root. The local file already has the four web config values filled; only the site key is still a placeholder.
+For Vercel, add them as Environment Variables for Production/Preview. For local development, copy `.env.example` to `apps/web/.env.local` (never commit it) and set `FIREBASE_APPCHECK_DEBUG=true` only there. Vite resolves env files from the web app root, so the file must live in `apps/web/`, not the repository root. The local file already has all six values filled, including the public Fraud Defense key and `recaptcha-enterprise` provider. Vercel still needs the same values.
 
 `FIREBASE_APPCHECK_SITE_KEY` is the **public site key**, never the secret key. `FIREBASE_APPCHECK_PROVIDER` is `recaptcha-v3` by default, or `recaptcha-enterprise` if you created the key in Google Cloud Fraud Defense (formerly reCAPTCHA Enterprise). `FIREBASE_APPCHECK_DEBUG` must be `false` or absent in production.
 
