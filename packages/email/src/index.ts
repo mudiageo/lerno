@@ -12,13 +12,26 @@ export class ResendProvider implements EmailProvider {
     this.client = new Resend(apiKey);
   }
 
-  async send({ to, subject, html, text }: { to: string; subject: string; html: string; text?: string }) {
+  async send({
+    to,
+    subject,
+    html,
+    text,
+  }: {
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+  }) {
     console.log('Sending email to', to);
     console.log('Subject', subject);
     console.log('Text', text);
     await this.client.emails.send({
       from: process.env.EMAIL_FROM ?? 'Lerno <noreply@lerno.dev>',
-      to, subject, html, text,
+      to,
+      subject,
+      html,
+      text,
     });
   }
 }
@@ -34,22 +47,52 @@ export class NodemailerProvider implements EmailProvider {
     });
   }
 
-  async send({ to, subject, html, text }: { to: string; subject: string; html: string; text?: string }) {
+  async send({
+    to,
+    subject,
+    html,
+    text,
+  }: {
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+  }) {
     await this.transporter.sendMail({
       from: process.env.EMAIL_FROM ?? 'Lerno <noreply@lerno.dev>',
-      to, subject, html, text,
+      to,
+      subject,
+      html,
+      text,
     });
   }
 }
 
-// Auto-select: Resend if API key present, else Nodemailer
-export const email: EmailProvider = process.env.RESEND_API_KEY
-  ? new ResendProvider(process.env.RESEND_API_KEY)
-  : new NodemailerProvider();
+// Auto-select: Resend if API key present, else Nodemailer.
+// Construct the provider lazily: nodemailer's createTransport() calls
+// crypto.randomBytes(), which Cloudflare Workers forbids in module global scope.
+let cachedProvider: EmailProvider | undefined;
+
+function getProvider(): EmailProvider {
+  cachedProvider ??= process.env.RESEND_API_KEY
+    ? new ResendProvider(process.env.RESEND_API_KEY)
+    : new NodemailerProvider();
+  return cachedProvider;
+}
+
+export const email: EmailProvider = {
+  send: (params) => getProvider().send(params),
+};
 
 // Shared Templates
 export const templates = {
-  examReminder: (params: { name: string; examTitle: string; courseCode: string; date: string; daysLeft: number }) => ({
+  examReminder: (params: {
+    name: string;
+    examTitle: string;
+    courseCode: string;
+    date: string;
+    daysLeft: number;
+  }) => ({
     subject: `📅 ${params.daysLeft === 1 ? 'Tomorrow' : `${params.daysLeft} days`}: ${params.examTitle} (${params.courseCode})`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -98,5 +141,5 @@ export const templates = {
         </a>
       </div>
     `,
-  })
+  }),
 };
