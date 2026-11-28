@@ -24,7 +24,7 @@ The detailed handoff packet lives in [`docs/buildhybridai2026/`](docs/buildhybri
 - Existing-app disclosure, description draft and demo script: see `docs/buildhybridai2026/submission/`.
 - MIT licence added at repo root.
 - Final validation and deployment config: done; all changes committed and pushed.
-- Firebase project, public config and App Check: not created yet — see `FIREBASE-SETUP.md`.
+- Firebase project: created. Public web config is wired in gitignored `apps/web/.env.local`; `FIREBASE_APPCHECK_SITE_KEY` is still pending. App Check provider can be `recaptcha-v3` or `recaptcha-enterprise` — see `FIREBASE-SETUP.md`.
 - Demo domain DNS: pending; `lerno.mudiageo.tech` currently returns NXDOMAIN.
 - Devpost form: not started.
 - YouTube demo: not recorded.
@@ -33,6 +33,6 @@ The detailed handoff packet lives in [`docs/buildhybridai2026/`](docs/buildhybri
 
 - All runtime inference in the submitted app must go through **Firebase AI Logic**. Keep the old providers only as disclosed pre-existing code, not as the running app's inference path.
 - Show `inferenceSource` on answers so the on-device/cloud handoff is visible.
-- Firebase web config values are public-safe; API keys, App Check debug tokens, `.env` files and PII are not.
+- Firebase web config values and the App Check site key are public-safe; App Check secret keys, debug tokens, `.env` files and PII are not.
 - Existing-app disclosure is mandatory: disclose pre-existing code and summarise what changed during the contest.
 - Do not stage `AGENTS.md`; it has unrelated line-ending noise.

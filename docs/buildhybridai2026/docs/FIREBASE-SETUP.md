@@ -18,29 +18,33 @@ The web config is public by design. Do not treat it as a secret, but still restr
 Use these exact names, already declared in `apps/web/src/env.ts`:
 
 ```text
-VITE_PUBLIC_FIREBASE_API_KEY
-VITE_PUBLIC_FIREBASE_AUTH_DOMAIN
-VITE_PUBLIC_FIREBASE_PROJECT_ID
-VITE_PUBLIC_FIREBASE_APP_ID
-VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY
+FIREBASE_API_KEY
+FIREBASE_AUTH_DOMAIN
+FIREBASE_PROJECT_ID
+FIREBASE_APP_ID
+FIREBASE_APPCHECK_SITE_KEY
+FIREBASE_APPCHECK_PROVIDER
 ```
 
-For Vercel, add them as Environment Variables for Production/Preview. For local development, copy `.env.example` to `.env.local` (never commit it) and set `VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG=true` only there.
+For Vercel, add them as Environment Variables for Production/Preview. For local development, copy `.env.example` to `apps/web/.env.local` (never commit it) and set `FIREBASE_APPCHECK_DEBUG=true` only there. Vite resolves env files from the web app root, so the file must live in `apps/web/`, not the repository root. The local file already has the four web config values filled; only the site key is still a placeholder.
 
-`VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY` is the **public reCAPTCHA v3 site key**, not a secret. `VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG` must be `false` or absent in production.
+`FIREBASE_APPCHECK_SITE_KEY` is the **public site key**, never the secret key. `FIREBASE_APPCHECK_PROVIDER` is `recaptcha-v3` by default, or `recaptcha-enterprise` if you created the key in Google Cloud Fraud Defense (formerly reCAPTCHA Enterprise). `FIREBASE_APPCHECK_DEBUG` must be `false` or absent in production.
 
 ## 3. Firebase App Check
 
 1. In Firebase console, open **Build → App Check**.
-2. Register the web app with the **reCAPTCHA v3** provider.
-3. Create a reCAPTCHA v3 site key for `lerno.mudiageo.tech`.
-4. Authorise `lerno.mudiageo.tech` (and `localhost` for development).
-5. Set `VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY` to the site key.
-6. Enable **enforcement** for AI Logic after verifying the app works.
+2. Register the web app with the **reCAPTCHA v3** provider (or **reCAPTCHA Enterprise** if you are using Google Cloud Fraud Defense).
+3. Create the site key for `lerno.mudiageo.tech`.
+4. In the Firebase app registration, paste the **secret key** when asked. That value stays in the Firebase console; it must never enter the repo or an env var.
+5. Authorise `lerno.mudiageo.tech` (and `localhost` for development).
+6. Set `FIREBASE_APPCHECK_SITE_KEY` to the **public site key**. If you used Fraud Defense / reCAPTCHA Enterprise, also set `FIREBASE_APPCHECK_PROVIDER=recaptcha-enterprise`.
+7. Enable **enforcement** for AI Logic after verifying the app works.
+
+The console warning that “reCAPTCHA Classic is deprecated, use Google Cloud Fraud Defense” applies to newly created key types. Firebase still supports the reCAPTCHA v3 provider for App Check, but recommends Enterprise for new integrations. Either provider works with this app; do not paste the **secret key** into code, env files, chat or the Devpost form.
 
 Local debug flow:
 
-1. Keep `VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG=true` in `.env.local` only.
+1. Keep `FIREBASE_APPCHECK_DEBUG=true` in `apps/web/.env.local` only.
 2. Open `/hybrid` in Chrome and check the console for the App Check debug token.
 3. Copy that token into **App Check → Manage debug tokens** and safelist it.
 4. Never paste the token into chat, a commit, Devpost, or `.env.example`.

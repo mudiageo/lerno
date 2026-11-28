@@ -328,7 +328,7 @@
 			<div>
 				<p class="font-semibold">Public Firebase web config missing</p>
 				<p class="mt-0.5 text-xs text-amber-700/80 dark:text-amber-200/80">
-					Add the VITE_PUBLIC_FIREBASE_* values listed in .env.example, then reload. Generation is
+					Add the FIREBASE_* values listed in .env.example, then reload. Generation is
 					paused until the web config is present.
 				</p>
 			</div>

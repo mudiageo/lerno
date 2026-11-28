@@ -47,32 +47,37 @@ export const variables = defineEnvVars({
     schema: building ? v.optional(v.string(), '') : v.string(),
     description: 'Connection string for the Postgres database',
   },
-  VITE_PUBLIC_FIREBASE_API_KEY: {
+  FIREBASE_API_KEY: {
     public: true,
     schema: v.optional(v.string(), ''),
     description: 'Public Firebase web API key for AI Logic',
   },
-  VITE_PUBLIC_FIREBASE_AUTH_DOMAIN: {
+  FIREBASE_AUTH_DOMAIN: {
     public: true,
     schema: v.optional(v.string(), ''),
     description: 'Public Firebase auth domain for AI Logic',
   },
-  VITE_PUBLIC_FIREBASE_PROJECT_ID: {
+  FIREBASE_PROJECT_ID: {
     public: true,
     schema: v.optional(v.string(), ''),
     description: 'Public Firebase project ID for AI Logic',
   },
-  VITE_PUBLIC_FIREBASE_APP_ID: {
+  FIREBASE_APP_ID: {
     public: true,
     schema: v.optional(v.string(), ''),
     description: 'Public Firebase web app ID for AI Logic',
   },
-  VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY: {
+  FIREBASE_APPCHECK_SITE_KEY: {
     public: true,
     schema: v.optional(v.string(), ''),
-    description: 'Public reCAPTCHA v3 site key for Firebase App Check',
+    description: 'Public reCAPTCHA v3 / Cloud Fraud Defense site key for Firebase App Check',
   },
-  VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG: {
+  FIREBASE_APPCHECK_PROVIDER: {
+    public: true,
+    schema: v.optional(v.string(), 'recaptcha-v3'),
+    description: 'App Check web provider: recaptcha-v3 or recaptcha-enterprise',
+  },
+  FIREBASE_APPCHECK_DEBUG: {
     public: true,
     schema: v.optional(v.string(), ''),
     description: 'Set to true only in local dev to use the App Check debug provider',

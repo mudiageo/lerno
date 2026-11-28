@@ -8,15 +8,20 @@
 
 import { browser, dev } from '$app/env';
 import {
-  VITE_PUBLIC_FIREBASE_API_KEY,
-  VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG,
-  VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY,
-  VITE_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  VITE_PUBLIC_FIREBASE_APP_ID,
-  VITE_PUBLIC_FIREBASE_PROJECT_ID,
+  FIREBASE_API_KEY,
+  FIREBASE_APPCHECK_DEBUG,
+  FIREBASE_APPCHECK_PROVIDER,
+  FIREBASE_APPCHECK_SITE_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_APP_ID,
+  FIREBASE_PROJECT_ID,
 } from '$app/env/public';
 import { getApps, initializeApp, type FirebaseApp } from 'firebase/app';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+  ReCaptchaV3Provider,
+} from 'firebase/app-check';
 import {
   getAI,
   getGenerativeModel,
@@ -115,10 +120,10 @@ function isPlaceholder(value: string): boolean {
 /** Firebase web config is public by design. It is not an API secret. */
 export function getFirebasePublicConfig(): FirebasePublicConfig | null {
   const config: FirebasePublicConfig = {
-    apiKey: envValue(VITE_PUBLIC_FIREBASE_API_KEY),
-    authDomain: envValue(VITE_PUBLIC_FIREBASE_AUTH_DOMAIN),
-    projectId: envValue(VITE_PUBLIC_FIREBASE_PROJECT_ID),
-    appId: envValue(VITE_PUBLIC_FIREBASE_APP_ID),
+    apiKey: envValue(FIREBASE_API_KEY),
+    authDomain: envValue(FIREBASE_AUTH_DOMAIN),
+    projectId: envValue(FIREBASE_PROJECT_ID),
+    appId: envValue(FIREBASE_APP_ID),
   };
 
   const values = Object.values(config);
@@ -132,12 +137,12 @@ export function isFirebaseAIConfigured(): boolean {
 function initialiseAppCheck(app: FirebaseApp): void {
   if (appCheckInitialised) return;
 
-  const debugEnabled = dev && envValue(VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG) === 'true';
-  const siteKey = envValue(VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY);
+  const debugEnabled = dev && envValue(FIREBASE_APPCHECK_DEBUG) === 'true';
+  const siteKey = envValue(FIREBASE_APPCHECK_SITE_KEY);
 
   if (!debugEnabled && !siteKey) {
     throw new Error(
-      'Firebase App Check is required. Set VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY, or enable the local debug provider.'
+      'Firebase App Check is required. Set FIREBASE_APPCHECK_SITE_KEY, or enable the local debug provider.'
     );
   }
 
@@ -147,8 +152,23 @@ function initialiseAppCheck(app: FirebaseApp): void {
     (self as FirebaseDebugWindow).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   }
 
+  const providerName = envValue(FIREBASE_APPCHECK_PROVIDER) || 'recaptcha-v3';
+  const key = siteKey || 'app-check-debug-provider';
+  let provider: ReCaptchaV3Provider | ReCaptchaEnterpriseProvider;
+
+  if (providerName === 'recaptcha-enterprise') {
+    // Google Cloud Fraud Defense (formerly reCAPTCHA Enterprise).
+    provider = new ReCaptchaEnterpriseProvider(key);
+  } else if (providerName === 'recaptcha-v3') {
+    provider = new ReCaptchaV3Provider(key);
+  } else {
+    throw new Error(
+      `Unknown FIREBASE_APPCHECK_PROVIDER "${providerName}". Use recaptcha-v3 or recaptcha-enterprise.`
+    );
+  }
+
   initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(siteKey || 'app-check-debug-provider'),
+    provider,
     isTokenAutoRefreshEnabled: true,
   });
 
@@ -163,7 +183,7 @@ function getFirebaseApp(): FirebaseApp {
   const config = getFirebasePublicConfig();
   if (!config) {
     throw new Error(
-      'Firebase AI Logic is not configured. Add the VITE_PUBLIC_FIREBASE_* values from the Firebase web app config.'
+      'Firebase AI Logic is not configured. Add the FIREBASE_* values from the Firebase web app config.'
     );
   }
 

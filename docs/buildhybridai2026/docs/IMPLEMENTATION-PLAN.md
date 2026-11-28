@@ -38,7 +38,7 @@ Firebase AI Logic is a **client SDK**. On-device Gemini Nano uses Chrome's Promp
   - `initializeDeviceModel()` must be called on a user gesture and before the first query; model download can take minutes.
   - On-device supports single-turn text only, text+image (JPEG/PNG) and structured output — no chat.
 - Capability readout: detect `(globalThis as any).LanguageModel?.availability()` → `available | downloadable | downloading | unavailable`; missing API means webview/no Chrome Prompt API. UI shows "On-device model available" or "On-device model unavailable — using cloud", plus a per-answer `ON_DEVICE` / `IN_CLOUD` badge from `inferenceSource`.
-- Env vars to add to `.env.example`: `VITE_PUBLIC_FIREBASE_API_KEY`, `VITE_PUBLIC_FIREBASE_AUTH_DOMAIN`, `VITE_PUBLIC_FIREBASE_PROJECT_ID`, `VITE_PUBLIC_FIREBASE_APP_ID`, `VITE_PUBLIC_FIREBASE_APPCHECK_SITE_KEY`, `VITE_PUBLIC_FIREBASE_APPCHECK_DEBUG`. Firebase web config is public-safe by design; App Check debug token is not.
+- Env vars declared in `apps/web/src/env.ts` and listed in `.env.example`: `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`, `FIREBASE_APPCHECK_SITE_KEY`, `FIREBASE_APPCHECK_PROVIDER` (`recaptcha-v3` or `recaptcha-enterprise`), `FIREBASE_APPCHECK_DEBUG`. They are exposed as public via `$app/env/public` without a `VITE_PUBLIC_` prefix. Firebase web config is public-safe by design; the App Check secret key, debug token and private keys are not.
 
 ### 2. Offline Revision Pack — cache first (implemented)
 
