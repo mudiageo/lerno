@@ -44,7 +44,7 @@ vp dev
 
 For Web/Chrome on-device inference, use Chrome Desktop 139+ and enable `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`, then restart Chrome. Pre-download the model by pressing **Prepare model** in the Hybrid AI Lab before demonstrating airplane-mode generation.
 
-Firebase web config values are public-safe. Copy `.env.example` to `.env` and fill the `VITE_PUBLIC_FIREBASE_*` values for your own Firebase project. App Check must be enabled: use the debug provider only in local development and register the production reCAPTCHA v3 site key for `lerno.mudiageo.tech`. **Never commit a debug token, private key, `.env` file or personal data.**
+Firebase web config values are public-safe. A gitignored `.env.local` placeholder file is already present locally; replace the `REPLACE_*` values with your own Firebase project's `VITE_PUBLIC_FIREBASE_*` config. Obvious placeholders are deliberately detected as “web config missing” so a placeholder build never pretends to be live. App Check must be enabled: use the debug provider only in local development and register the production reCAPTCHA v3 site key for `lerno.mudiageo.tech`. **Never commit a debug token, private key, `.env` file or personal data.** Exact console steps are in `docs/buildhybridai2026/docs/FIREBASE-SETUP.md`.
 
 ## Validation
 

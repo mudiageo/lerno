@@ -100,6 +100,18 @@ function envValue(value: string | undefined): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+/** Treat scaffold values as missing so a placeholder build never pretends to be live. */
+function isPlaceholder(value: string): boolean {
+  if (!value) return true;
+  return (
+    /^REPLACE_/i.test(value) ||
+    /^your[-_]/i.test(value) ||
+    /^xxx+$/i.test(value) ||
+    /^<.*>$/.test(value) ||
+    /^AIza\.\.\.$/.test(value)
+  );
+}
+
 /** Firebase web config is public by design. It is not an API secret. */
 export function getFirebasePublicConfig(): FirebasePublicConfig | null {
   const config: FirebasePublicConfig = {
@@ -109,8 +121,8 @@ export function getFirebasePublicConfig(): FirebasePublicConfig | null {
     appId: envValue(VITE_PUBLIC_FIREBASE_APP_ID),
   };
 
-  const complete = Object.values(config).every(Boolean);
-  return complete ? config : null;
+  const values = Object.values(config);
+  return values.every((value) => value && !isPlaceholder(value)) ? config : null;
 }
 
 export function isFirebaseAIConfigured(): boolean {
